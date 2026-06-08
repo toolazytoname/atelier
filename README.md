@@ -1,13 +1,37 @@
-# atelier
+<p align="center">
+  <a href="README.md">
+    <img src="assets/banner.svg" alt="atelier — a disposable Linux dev sandbox for Claude Code" width="820">
+  </a>
+</p>
 
-An isolated, disposable Linux dev sandbox that runs **Claude Code, the
-open-design daemon, and every dev tool** inside an OrbStack VM. The host
-Mac is reduced to its true minimum: a terminal, a browser tab, and
-OrbStack itself. No Node, no Python, no Go, no Rust, no MCP servers, no
-open-design app — all of it lives in the VM, dies with the VM, and can be
-rebuilt from scratch in ~5 minutes.
+<p align="center">
+  <strong>Run Claude Code in a disposable Linux VM. Your host stays clean.</strong>
+</p>
 
-## TL;DR
+<p align="center">
+  <a href="README.md"><b>English</b></a>
+  ·
+  <a href="README.zh-CN.md">中文</a>
+</p>
+
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
+  <a href="https://orbstack.dev"><img src="https://img.shields.io/badge/VM-OrbStack-blueviolet" alt="VM: OrbStack"></a>
+  <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Ubuntu%2024.04-lightgrey" alt="Platform">
+  <img src="https://img.shields.io/badge/powered_by-Claude%20Code-D97757" alt="Powered by Claude Code">
+</p>
+
+---
+
+*atelier* (French: **workshop**) is a self-contained, **disposable Linux
+dev sandbox** for building whatever you want. The whole workflow — code,
+builds, tests, dependencies — lives inside an OrbStack Linux VM. The
+host Mac is reduced to its true minimum: a terminal, a browser tab, and
+OrbStack itself. No Node, no Python, no Go, no Rust, no MCP servers — all
+of it lives in the VM, dies with the VM, and can be rebuilt from scratch
+in ~5 minutes.
+
+## Quick start
 
 ```bash
 # 1. install OrbStack (one time)
@@ -33,12 +57,27 @@ config files touched.
 ### Mirrors
 
 `provision.sh` defaults to **mainland-China mirrors** because the
-international Cloudflare-fronted CDNs (deb.nodesource.com,
-download.docker.com, etc.) rate-limit aggressively when traffic comes
+international Cloudflare-fronted CDNs (`deb.nodesource.com`,
+`download.docker.com`, etc.) rate-limit aggressively when traffic comes
 from CN egress. The script uses TUNA (apt), npmmirror (Node/npm/binary
 mirror), goproxy.cn (Go module proxy), rsproxy.cn (crates.io), and
-ghfast.top (GitHub releases). Set `CN_MIRROR=0 ./setup/provision.sh` to use
-international sources instead.
+ghfast.top (GitHub releases). Set `CN_MIRROR=0 ./setup/provision.sh` to
+use international sources instead.
+
+## Highlights
+
+- **Yolo with a bounded blast radius.** Run Claude Code with
+  `--dangerously-skip-permissions`; the architecture is the wall, the
+  allow/deny list is just the backstop.
+- **Host stays inert.** No dev tools installed, no shell rc modified,
+  no config files touched. `bin/devbox reset` rebuilds the VM in
+  ~5 min.
+- **CN-friendly out of the box.** `provision.sh` defaults to
+  mainland-China mirrors so installs don't crawl on CN egress. Set
+  `CN_MIRROR=0` to switch to international sources.
+- **One wrapper, every command.** `bin/devbox run` / `shell` / `claude` /
+  `gui` / `doctor` / `reset` — your whole toolchain lives behind one
+  driver.
 
 ## The all-in-VM architecture
 
@@ -67,15 +106,15 @@ you'd expect (on the host), and the VM just borrows them for execution.
 ## What lives where
 
 | Concern                       | Host | VM | Why                                                                              |
-|------------------------------|------|----|----------------------------------------------------------------------------------|
-| Terminal, browser, display  |  ✓   |    | the OS already does this for you                                                |
+|-------------------------------|------|----|----------------------------------------------------------------------------------|
+| Terminal, browser, display    |  ✓   |    | the OS already does this for you                                                |
 | OrbStack hypervisor           |  ✓   |    | runs the Linux VM on Apple Silicon                                               |
-| Claude Code                  |      |  ✓ | talks to local open-design MCP; no host config needed                           |
-| open-design daemon           |      |  ✓ | Node service; binds 127.0.0.1 only; accessed via SSH tunnel                      |
-| open-design MCP              |      |  ✓ | stdio bridge from CC to the daemon                                              |
-| open-design web UI           |      |  ✓ | served at 127.0.0.1:7456 inside VM; user sees it at localhost:7456 on host        |
+| Claude Code                   |      |  ✓ | talks to local open-design MCP; no host config needed                           |
+| open-design daemon            |      |  ✓ | Node service; binds 127.0.0.1 only; accessed via SSH tunnel                      |
+| open-design MCP               |      |  ✓ | stdio bridge from CC to the daemon                                              |
+| open-design web UI            |      |  ✓ | served at 127.0.0.1:7456 inside VM; user sees it at localhost:7456 on host      |
 | Node 24 / pnpm / Python / Go / Rust / uv / gh / starship |  | ✓ | isolated per-project; `bin/devbox reset` removes them in one shot    |
-| project files                |  ✓   |    | `/Users/lazy/Code/crack/atelier/` on host, mounted as `/mnt/mac/...` in VM       |
+| project files                 |  ✓   |    | `/Users/lazy/Code/crack/atelier/` on host, mounted as `/mnt/mac/...` in VM       |
 
 ## The four-pillar methodology
 
@@ -102,6 +141,9 @@ makes the loop fast and safe.
 ├── LICENSE                    # MIT
 ├── Makefile                   # make setup / doctor / reset / passthrough / shell
 ├── .gitignore
+├── assets/
+│   ├── logo.svg               # monogram used in social cards
+│   └── banner.svg             # banner used in this README
 ├── .claude/
 │   └── settings.json          # project-level sandbox config (allow list, yolo backstop deny)
 ├── .mcp.json                  # open-design MCP bridge config (consumed by CC inside the VM)
@@ -188,3 +230,13 @@ Prompts for confirmation, deletes the existing `atelier` VM, and
 recreates it from scratch with the same provision script. Re-run time:
 ~5–10 minutes (mostly downloading Ubuntu packages and language
 runtimes). The host filesystem is untouched.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for how to file issues and send
+PRs. The design rationale behind the four pillars lives in
+[`docs/design.md`](docs/design.md).
+
+## License
+
+[MIT](LICENSE)

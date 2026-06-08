@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="atelier">
+  <title>atelier</title>
+  <rect width="100" height="100" rx="22" fill="#0f172a"/>
+  <!-- "A" letterform: two strokes meeting at a peak + a crossbar -->
+  <path d="M26 78 L50 28 L74 78" stroke="#e2e8f0" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M34 62 L66 62" stroke="#e2e8f0" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- workshop spark: a small warm dot in the upper-right corner -->
+  <circle cx="80" cy="22" r="5" fill="#f59e0b"/>
+</svg>
