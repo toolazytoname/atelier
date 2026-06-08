@@ -1,0 +1,256 @@
+#!/usr/bin/env bash
+# devbox — host-side wrapper around the OrbStack atelier VM.
+#
+# Routes every command into the VM so all dev work stays sandboxed. Mirrors
+# host env (ANTHROPIC_BASE_URL, ANTHROPIC_AUTH_TOKEN, etc.) into the VM via
+# /etc/environment.d/.
+#
+# Usage:
+#   devbox status                # show VM state
+#   devbox shell                 # open an interactive shell
+#   devbox run <cmd>             # run a command (shorthand for orb run)
+#   devbox claude                # run Claude Code entirely inside the VM
+#   devbox gui                   # open open-design Electron GUI from VM
+#   devbox push <file>           # copy file/folder into VM home
+#   devbox pull <file>           # copy from VM home to cwd
+#   devbox provision             # re-run setup/provision.sh inside VM
+#   devbox reset                 # destroy + recreate the VM (DESTRUCTIVE)
+#   devbox doctor                # check host + VM health
+#
+# Self-contained: pure bash, no Node/Rust deps. Auto-installs to ~/bin.
+set -euo pipefail
+
+VM_NAME="${DEVBOX_VM:-atelier}"
+VM_CPUS="${DEVBOX_CPUS:-4}"
+VM_MEMORY="${DEVBOX_MEMORY:-8G}"
+VM_DISK="${DEVBOX_DISK:-64G}"
+VM_DISTRO="${DEVBOX_DISTRO:-ubuntu:24.04}"
+
+# ---------------------------------------------------------------------------
+# helpers
+# ---------------------------------------------------------------------------
+log()  { printf '\033[1;34m[devbox]\033[0m %s\n' "$*"; }
+warn() { printf '\033[1;33m[devbox]\033[0m %s\n' "$*" >&2; }
+die()  { printf '\033[1;31m[devbox]\033[0m %s\n' "$*" >&2; exit 1; }
+
+# ---------------------------------------------------------------------------
+# prerequisites
+# ---------------------------------------------------------------------------
+require_orb() {
+  if ! command -v orbctl >/dev/null 2>&1 && ! command -v orb >/dev/null 2>&1; then
+    die "OrbStack not found. Install: brew install --cask orbstack"
+  fi
+  # Use orbctl explicitly so 'orb run' doesn't shadow the prefix form
+  export PATH="/opt/homebrew/bin:$PATH"
+  if ! command -v orbctl >/dev/null 2>&1; then
+    # shellcheck disable=SC2155
+    export PATH="$(dirname "$(command -v orb)"):$PATH"
+  fi
+}
+
+vm_exists() { orbctl list 2>/dev/null | awk '{print $1}' | grep -qx "$VM_NAME"; }
+vm_running() { orbctl list 2>/dev/null | awk '$2=="running" {print $1}' | grep -qx "$VM_NAME"; }
+
+ensure_vm() {
+  require_orb
+  if ! vm_exists "$VM_NAME"; then
+    log "VM $VM_NAME not found — creating $VM_DISTRO (cpus=$VM_CPUS mem=$VM_MEMORY disk=$VM_DISK)"
+    orbctl create --cpus "$VM_CPUS" --memory "$VM_MEMORY" --disk "$VM_DISK" "$VM_DISTRO" "$VM_NAME"
+  fi
+  if ! vm_running "$VM_NAME"; then
+    log "starting $VM_NAME"
+    orbctl start "$VM_NAME" >/dev/null
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# subcommands
+# ---------------------------------------------------------------------------
+cmd_status() {
+  require_orb
+  orbctl info "$VM_NAME" 2>/dev/null || die "VM $VM_NAME not found (try: devbox reset)"
+}
+
+cmd_shell() {
+  ensure_vm
+  exec orbctl shell "$VM_NAME"
+}
+
+cmd_run() {
+  ensure_vm
+  if [[ $# -eq 0 ]]; then
+    exec orbctl shell "$VM_NAME"
+  fi
+  orbctl run -m "$VM_NAME" "$@"
+}
+
+cmd_push() {
+  ensure_vm
+  [[ $# -ge 1 ]] || die "usage: devbox push <file-or-dir> [dest]"
+  local src="$1" dest="${2:-.}"
+  orbctl push -m "$VM_NAME" "$src" "$dest"
+}
+
+cmd_pull() {
+  ensure_vm
+  [[ $# -ge 1 ]] || die "usage: devbox pull <vm-path> [local-dest]"
+  local src="$1" dest="${2:-.}"
+  orbctl pull -m "$VM_NAME" "$src" "$dest"
+}
+
+cmd_provision() {
+  ensure_vm
+  local script="/mnt/mac/Users/lazy/Code/crack/claude/atelier/setup/provision.sh"
+  [[ -f "$script" ]] || die "provision script not found at $script"
+  log "running provision.sh inside $VM_NAME"
+  orbctl run -m "$VM_NAME" bash "$script"
+}
+
+# Run Claude Code entirely inside the VM. The host becomes a thin display
+# terminal: no tools, no plugins, no MCP servers — those all live in the VM
+# and are shared with the host via /mnt/mac.
+cmd_claude() {
+  ensure_vm
+  local extra=()
+  for v in ANTHROPIC_BASE_URL ANTHROPIC_AUTH_TOKEN ANTHROPIC_API_KEY \
+           API_TIMEOUT_MS GITHUB_TOKEN; do
+    [[ -n "${!v-}" ]] && extra+=("$v=${!v}")
+  done
+
+  log "launching claude inside $VM_NAME (host is now just a display terminal)"
+  # Daemon + CC share one orb run so they live and die together. The daemon
+  # is a background process inside the same VM shell; CC talks to it via the
+  # local MCP (.mcp.json) over loopback. Ctrl-C kills the whole group.
+  exec orbctl run -m "$VM_NAME" "${extra[@]}" bash -lc '
+    export PATH="$HOME/.local/bin:/usr/local/node-v24.11.0-linux-arm64/bin:$PATH"
+    cd "/mnt/mac/Users/lazy/Code/crack/atelier"
+
+    # Start the open-design daemon in the background of THIS shell, so the
+    # MCP bridge is alive while CC runs. The MCP itself is stdio (od mcp),
+    # not HTTP, so no token / port binding is needed.
+    if ! pgrep -f "od.mjs" >/dev/null 2>&1; then
+      echo "[devbox] starting open-design daemon"
+      nohup ~/.local/bin/od start >~/.local/share/open-design/daemon.log 2>&1 &
+      disown
+      # Give it a moment to bind 127.0.0.1:7456 before CC connects.
+      for i in 1 2 3 4 5; do
+        pgrep -f "od.mjs" >/dev/null 2>&1 && break
+        sleep 1
+      done
+    fi
+    od status 2>&1 | sed "s/^/  /"
+
+    exec claude "$@"
+  ' _ "$@"
+}
+
+# Forward the open-design web UI from the VM to the host browser via an
+# SSH tunnel through OrbStack. The daemon lives in a background `orb run`
+# so it survives the SSH session handshake; killing the foreground ssh
+# process tears the tunnel down and the daemon exits with the orb run.
+cmd_gui() {
+  ensure_vm
+  local port="${DEVBOX_GUI_PORT:-7456}"
+  log "tunneling VM's :$port → host's :$port (Ctrl-C to stop)"
+  log "then open: http://localhost:$port"
+
+  # Start the daemon in its own long-lived `orb run` (it stays alive for
+  # the duration of the tunnel). Bind only to loopback — the SSH tunnel
+  # is what bridges traffic to the host.
+  orbctl run -m "$VM_NAME" bash -lc '
+    export PATH="$HOME/.local/bin:$PATH"
+    if ! pgrep -f "od.mjs" >/dev/null 2>&1; then
+      echo "[devbox] starting open-design daemon"
+      nohup ~/.local/bin/od start >~/.local/share/open-design/daemon.log 2>&1 &
+      disown
+      for i in 1 2 3 4 5; do
+        pgrep -f "od.mjs" >/dev/null 2>&1 && break
+        sleep 1
+      done
+    fi
+    od status 2>&1 | sed "s/^/  /"
+    echo "[devbox] daemon ready on 127.0.0.1:'$port'. Ctrl-C the bin/devbox gui process to stop the tunnel."
+    exec sleep infinity
+  ' &
+  local daemon_pid=$!
+
+  # Tidy up on Ctrl-C
+  trap "kill $daemon_pid 2>/dev/null; wait $daemon_pid 2>/dev/null" EXIT INT TERM
+
+  # OrbStack exposes Linux VMs as `user@machine@orb` over SSH.
+  ssh -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/dev/null \
+      -N -L "${port}:127.0.0.1:${port}" "${USER}@${VM_NAME}@orb"
+  kill $daemon_pid 2>/dev/null
+  wait $daemon_pid 2>/dev/null
+}
+
+cmd_reset() {
+  require_orb
+  warn "this will DELETE the VM $VM_NAME and recreate it from scratch"
+  warn "all uncommitted work inside the VM will be lost"
+  read -rp "type 'yes' to continue: " confirm
+  [[ "$confirm" == "yes" ]] || { log "aborted"; exit 0; }
+  if vm_exists "$VM_NAME"; then
+    log "deleting $VM_NAME"
+    orbctl delete "$VM_NAME" --force 2>/dev/null || true
+  fi
+  log "creating $VM_NAME"
+  orbctl create --cpus "$VM_CPUS" --memory "$VM_MEMORY" --disk "$VM_DISK" "$VM_DISTRO" "$VM_NAME"
+  cmd_provision
+}
+
+cmd_doctor() {
+  local ok=1
+  printf '%-22s ' "orbstack:"
+  if command -v orbctl >/dev/null 2>&1; then
+    printf "OK (%s)\n" "$(orbctl --help 2>&1 | head -1 || true)"
+  else
+    printf "MISSING — brew install --cask orbstack\n"; ok=0
+  fi
+
+  printf '%-22s ' "vm $VM_NAME:"
+  if vm_exists "$VM_NAME"; then
+    if vm_running "$VM_NAME"; then
+      printf "running\n"
+    else
+      printf "stopped\n"
+    fi
+  else
+    printf "not created — run: devbox provision\n"; ok=0
+  fi
+
+  printf '%-22s ' "shared mount:"
+  if orbctl run -m "$VM_NAME" test -d /mnt/mac 2>/dev/null; then
+    printf "OK (/mnt/mac)\n"
+  else
+    printf "missing — VM not running or non-OrbStack backend\n"; ok=0
+  fi
+
+  printf '%-22s ' "host env passthrough:"
+  if orbctl run -m "$VM_NAME" test -f "/home/$(whoami)/.config/environment.d/host-proxy.conf" 2>/dev/null; then
+    printf "installed\n"
+  else
+    printf "missing — run: ./setup/host-passthrough.sh\n"; ok=0
+  fi
+
+  return $((1 - ok))
+}
+
+# ---------------------------------------------------------------------------
+# dispatch
+# ---------------------------------------------------------------------------
+case "${1:-help}" in
+  status)    shift; cmd_status "$@" ;;
+  shell)     shift; cmd_shell "$@" ;;
+  run)       shift; cmd_run "$@" ;;
+  push)      shift; cmd_push "$@" ;;
+  pull)      shift; cmd_pull "$@" ;;
+  provision) shift; cmd_provision "$@" ;;
+  claude)    shift; cmd_claude "$@" ;;
+  gui)       shift; cmd_gui "$@" ;;
+  reset)     shift; cmd_reset "$@" ;;
+  doctor)    shift; cmd_doctor "$@" ;;
+  help|--help|-h|*)
+    sed -n '2,30p' "$0" | sed 's/^# \{0,1\}//'
+    ;;
+esac

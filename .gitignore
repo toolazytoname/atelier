@@ -1,0 +1,82 @@
+# OS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor / IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.fleet/
+
+# Claude Code per-project state
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+.claude/cache/
+.claude/file-history/
+.claude/paste-cache/
+.claude/session-data/
+.claude/session-env/
+.claude/tasks/
+.claude/jobs/
+.claude/homunculus/
+.claude/telemetry/
+.claude/usage-data/
+.claude/metrics/
+.claude/backups/
+.claude/bash-commands.log
+.claude/cost-tracker.log
+.claude/daemon.log
+.claude/debug/
+.claude/.last-*
+
+# Playwright MCP artifacts
+.playwright-mcp/
+
+# Node / pnpm (in case anyone runs `pnpm install` in this repo)
+node_modules/
+.pnpm-store/
+*.log
+
+# Build artifacts
+dist/
+build/
+target/
+
+# VM ephemeral state (never commit, lives on host filesystem only)
+.vagrant/
+.orbstack-local/
+
+# Secrets — never commit
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.p12
+
+# Local-only override of the mirror list
+.mirrors.local
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+
+# Go
+*.test
+*.out
+
+# Rust
+**/target/
+**/Cargo.lock
