@@ -1,0 +1,76 @@
+name: Bug report
+description: Something in the sandbox / VM / driver isn't working as documented
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing this. Before you continue, please run
+        `bin/devbox doctor` and paste the output below — it answers
+        ~80% of bugs faster than a back-and-forth.
+
+  - type: textarea
+    id: doctor
+    attributes:
+      label: `bin/devbox doctor` output
+      description: Paste the full output verbatim. If the command itself fails, paste the error.
+      render: shell
+    validations:
+      required: true
+
+  - type: input
+    id: orbstack
+    attributes:
+      label: OrbStack version (`orb --version`)
+      placeholder: e.g. 1.7.4 (build 22767)
+    validations:
+      required: true
+
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version (`sw_vers`)
+      placeholder: e.g. ProductName: macOS, ProductVersion: 15.3, BuildVersion: 24D60
+    validations:
+      required: true
+
+  - type: input
+    id: mirror
+    attributes:
+      label: Mirror mode
+      description: Did you provision with `CN_MIRROR=1` (default) or `CN_MIRROR=0`?
+      placeholder: "1 (default)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: The exact commands you ran, in order. Use fenced code blocks.
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+    validations:
+      required: true
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: Logs, screenshots, network traces (`./bin/devbox run curl -v <url>` for connectivity issues), etc.
+    validations:
+      required: false

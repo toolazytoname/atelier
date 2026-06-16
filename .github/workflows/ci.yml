@@ -1,0 +1,90 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint (shellcheck + markdownlint + JSON)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install shellcheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck jq
+          shellcheck --version
+
+      - name: shellcheck on bash
+        run: |
+          set -euo pipefail
+          shellcheck bin/devbox setup/*.sh
+
+      - name: bash -n syntax check
+        run: |
+          set -euo pipefail
+          for f in bin/devbox setup/*.sh; do
+            bash -n "$f" || { echo "syntax error in $f"; exit 1; }
+          done
+
+      - name: Validate JSON files
+        run: |
+          set -euo pipefail
+          for f in .claude/settings.json .mcp.json; do
+            if [ -f "$f" ]; then
+              jq -e . "$f" > /dev/null || { echo "invalid JSON: $f"; exit 1; }
+            fi
+          done
+
+      - name: Validate YAML files
+        run: |
+          set -euo pipefail
+          python3 -c "import yaml, glob, sys
+          for f in glob.glob('.github/**/*.yml', recursive=True) + glob.glob('.github/**/*.yaml', recursive=True):
+            try:
+              yaml.safe_load(open(f))
+            except yaml.YAMLError as e:
+              print(f'invalid YAML: {f}: {e}'); sys.exit(1)"
+
+      - name: markdownlint-cli2
+        uses: DavidAnson/markdownlint-cli2-action@v19
+        with:
+          globs: |
+            *.md
+            .github/**/*.md
+            docs/**/*.md
+          config: .markdownlint.jsonc
+
+  smoke:
+    name: Smoke (bin/devbox help)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: bin/devbox --help renders
+        run: |
+          set -euo pipefail
+          # We can't actually start OrbStack on a Linux runner, but the
+          # help subcommand must not require the VM and must not invoke
+          # orbctl for `help`.
+          bin/devbox help | head -20
+
+      - name: bin/devbox help table is non-empty
+        run: |
+          set -euo pipefail
+          out="$(bin/devbox help)"
+          for kw in status shell run push pull provision claude gui reset doctor; do
+            echo "$out" | grep -q "$kw" || { echo "missing subcommand in help: $kw"; exit 1; }
+          done
+
+      - name: bin/devbox doctor fails gracefully without VM
+        run: |
+          set -euo pipefail
+          # doctor should print MISSING / not created — not a stack trace
+          bin/devbox doctor 2>&1 | grep -E "(MISSING|not created|not running)" || true

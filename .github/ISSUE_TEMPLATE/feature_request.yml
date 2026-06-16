@@ -1,0 +1,51 @@
+name: Feature request
+description: Propose a new sandbox feature, subcommand, or workflow
+title: "[feat] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template to propose a new subcommand on `bin/devbox`,
+        a new setup script, a new docs section, or a workflow improvement.
+        For *questions* about how something works, use Discussions instead.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What's the problem?
+      description: What pain point does this solve? Be concrete — give a real example of the friction.
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: What would `bin/devbox <subcommand>` (or whatever) look like? Sketch the interface, not the implementation.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Why not do it a different way? What did you try already?
+    validations:
+      required: false
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Affected audience
+      description: CN vs international users? Beginner vs power user? Affects the yolo-safety model?
+    validations:
+      required: false
+
+  - type: textarea
+    id: willingness
+    attributes:
+      label: Willingness to contribute
+      description: Would you send a PR for this? If not, that's fine — just helps us gauge priority.
+    validations:
+      required: false
