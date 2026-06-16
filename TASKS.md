@@ -18,10 +18,14 @@ Shipping atelier v1.0.0 — open-source release.
 
 ## Open
 
-- [ ] **First GitHub release v1.0.0.** Tag, push, open release on
-      GitHub with `CHANGELOG.md` content. Requires the user to
-      push to GitHub (this is the publish step). Also enable
-      Discussions on the repo.
+- [ ] **Publish GitHub release v1.0.0** (two manual UI clicks —
+      see `RELEASE-v1.0.0.md`):
+  1. https://github.com/toolazytoname/atelier/actions/workflows/release.yml
+     → "Run workflow" → Run (the workflow auto-creates the release
+     from the `CHANGELOG.md` `[1.0.0]` section)
+  2. Settings → Features → enable Discussions
+- After both: verify the badge at the top of README resolves to a
+  real release page (not 404).
 
 ## Done (recent)
 
@@ -33,6 +37,14 @@ Shipping atelier v1.0.0 — open-source release.
       to Chinese (`*.zh-CN.md`): architecture / comparison /
       security-model / workflow. README file layout updated to
       point at the `.zh-CN.md` variants.
+- [x] **Push `main` + tag v1.0.0.** `git push -u origin main` +
+      `git tag -a v1.0.0 && git push origin v1.0.0`. SSH auth via
+      `~/.ssh/`. All 13 commits landed; tag `24cbe34` is on remote.
+- [x] **Auto-release workflow** (`.github/workflows/release.yml`).
+      Fires on `v[0-9]+.[0-9]+.[0-9]+` tag push OR via
+      `workflow_dispatch` (input: tag). Extracts the matching
+      CHANGELOG section as the release body. Idempotent
+      (updates in place). Future releases are no-touch.
 
 ## Done (recent)
 
