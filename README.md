@@ -196,7 +196,8 @@ that makes the loop fast and safe.
 │   ├── architecture.md        # component diagram + data flow + env passthrough
 │   ├── comparison.md          # vs Docker Desktop / Lima / Vagrant / Multipass
 │   ├── security-model.md      # yolo-safety model: walls, threats, limitations
-│   └── workflow.md            # the harness loop: 5 stages + isolation rules
+│   ├── workflow.md            # the harness loop: 5 stages + isolation rules
+│   └── *.zh-CN.md             # 中文版（architecture / comparison / security-model / workflow）
 ├── examples/                  # minimal end-to-end demos
 │   └── harness-demo/          # runnable harness loop: spec + orchestrate.py + reviewers
 ├── bin/
