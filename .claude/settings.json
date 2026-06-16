@@ -31,7 +31,6 @@
       "Bash(rm -rf $HOME)",
       "Bash(rm -rf $HOME/**)",
       "Bash(rm -rf /Users/lazy/Code/crack/!(atelier)/**)",
-      "Bash(:(){:|:&};:)",
       "Bash(sudo*)",
       "Bash(doas*)",
       "Bash(curl *|bash*)",
