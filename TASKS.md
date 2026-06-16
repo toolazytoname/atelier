@@ -18,17 +18,21 @@ Shipping atelier v1.0.0 — open-source release.
 
 ## Open
 
-- [ ] **Decide EN-ZH sync for new docs.** The new `docs/*.md`
-      (architecture / comparison / security-model / workflow) are
-      EN-only. Decision: translate to Chinese, or keep EN with a
-      note that translations are welcome?
-- [ ] **Create `assets/social-card.svg`.** 1200×630 Open Graph
-      card for social shares. Use the same monogram as `logo.svg`
-      with project name and tagline.
 - [ ] **First GitHub release v1.0.0.** Tag, push, open release on
       GitHub with `CHANGELOG.md` content. Requires the user to
       push to GitHub (this is the publish step). Also enable
       Discussions on the repo.
+
+## Done (recent)
+
+- [x] **Create `assets/social-card.svg`.** 1200×630 Open Graph
+      card for social shares. Same design language as
+      `logo.svg` + `banner.svg` (dark navy gradient, amber
+      spark, monospace URL footer).
+- [x] **EN-ZH sync for new docs.** All 4 new docs translated
+      to Chinese (`*.zh-CN.md`): architecture / comparison /
+      security-model / workflow. README file layout updated to
+      point at the `.zh-CN.md` variants.
 
 ## Done (recent)
 
