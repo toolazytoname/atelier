@@ -17,6 +17,13 @@ on:
   push:
     tags:
       - "v[0-9]+.[0-9]+.[0-9]+"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to publish (e.g. v1.0.0). Leave empty for HEAD."
+        required: false
+        type: string
+        default: ""
 
 permissions:
   contents: write   # needed to create / update the release
@@ -31,12 +38,31 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Resolve tag
+        id: tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Three sources, in priority order:
+          #   1. workflow_dispatch input (manual rerun for a specific tag)
+          #   2. GITHUB_REF_NAME (auto-trigger from a tag push)
+          #   3. Error out — no tag context
+          if [[ -n "${{ inputs.tag }}" ]]; then
+            tag="${{ inputs.tag }}"
+          elif [[ "${{ github.ref_type }}" == "tag" ]]; then
+            tag="${{ github.ref_name }}"
+          else
+            echo "::error::no tag context (not a tag push and inputs.tag empty)"
+            exit 1
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
       - name: Extract release notes from CHANGELOG.md
         id: notes
         shell: bash
         run: |
           set -euo pipefail
-          tag="${GITHUB_REF_NAME}"            # e.g. v1.2.3
+          tag="${{ steps.tag.outputs.tag }}"  # e.g. v1.2.3
           version="${tag#v}"                 # 1.2.3
           changelog="CHANGELOG.md"
 
@@ -71,8 +97,8 @@ jobs:
       - name: Create or update release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_name }}
-          name: ${{ github.ref_name }}
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: ${{ steps.tag.outputs.tag }}
           body: ${{ steps.notes.outputs.body }}
           draft: false
           prerelease: false
