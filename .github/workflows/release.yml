@@ -1,0 +1,85 @@
+name: release
+
+# Auto-create a GitHub Release when a `v*` tag is pushed.
+#
+# - Tag format: vMAJOR.MINOR.PATCH (e.g. v1.0.0, v1.1.0, v1.1.1).
+# - Mark the release as `latest` for the highest semver tag in the
+#   current major series.
+# - Release body is the section between the matching `## [X.Y.Z]`
+#   header and the next one in CHANGELOG.md. Falls back to a small
+#   stub if the section can't be found (e.g. a tag pushed before the
+#   CHANGELOG is updated).
+# - Attaches nothing; binaries aren't part of v1.x.
+# - Idempotent: if the release already exists for the tag, it's
+#   updated in place rather than failing.
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+
+permissions:
+  contents: write   # needed to create / update the release
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract release notes from CHANGELOG.md
+        id: notes
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME}"            # e.g. v1.2.3
+          version="${tag#v}"                 # 1.2.3
+          changelog="CHANGELOG.md"
+
+          if [[ ! -f "$changelog" ]]; then
+            echo "::error::CHANGELOG.md not found at repo root"
+            exit 1
+          fi
+
+          # Extract the section for this version. The header line is
+          # `## [X.Y.Z]` (optionally with a date). Everything up to the
+          # next `## [` header belongs to this release.
+          body="$(awk -v v="[$version]" '
+            $0 ~ "^## " v { capture=1; next }
+            capture && /^## \[/ { exit }
+            capture { print }
+          ' "$changelog")"
+
+          if [[ -z "$body" ]]; then
+            echo "::warning::no CHANGELOG section for $version; using stub"
+            body="Release ${version}. See CHANGELOG.md for details."
+          fi
+
+          # Trim trailing whitespace per line; preserve the rest.
+          body="$(printf '%s\n' "$body" | sed 's/[[:space:]]*$//')"
+
+          {
+            echo "body<<EOF"
+            echo "$body"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create or update release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          body: ${{ steps.notes.outputs.body }}
+          draft: false
+          prerelease: false
+          # `make_latest` is "true" by default in v2.x — this is the
+          # safe default for v1.0.0. For v1.x.y patch releases you'll
+          # still want them to be "latest" so users get the fix by
+          # default. Override in a future major bump if needed.
+          fail_on_unmatched_filter: false
+          # If a release with this tag already exists, action-gh-release
+          # updates it (does not 409).
