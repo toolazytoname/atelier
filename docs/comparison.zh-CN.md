@@ -1,4 +1,4 @@
-# 为什么选 OrbStack？（vs Docker Desktop、Lima、Vagrant、Multipass）
+# 为什么选 OrbStack？（vs Docker Desktop、Lima、Vagrant、Multipass、Apple container）
 
 > 如果你已经在用其中某一个而且它能用，就不需要 atelier。
 > 如果你刚上 macOS Apple Silicon，想要一个开发沙箱，这一页就是给你的。
@@ -8,6 +8,7 @@
 | 工具 | Apple Silicon 性能 | 几秒内 reset | 自动共享目录 | SSH 访问 | 适合 atelier 吗？ |
 |------|--------------------|---------------|--------------|----------|-------------------|
 | **OrbStack（atelier 的选择）** | 极好 | 可以 | 可以（自动） | 可以 | ✅ 自带 `bin/devbox` |
+| [Apple `container`](https://github.com/apple/container) | 极好 | 可以（按 container） | 显式按 container | 不可以 | ❌ 心智模型对不上（见下） |
 | Docker Desktop | 好 | 可以（容器） | 有时可以 | 难用 | 部分可以 —— 需要重写 |
 | Lima | 好 | 可以 | 可以（手动） | 可以 | 需要 ~1 天胶水代码 |
 | colima | 好 | 可以 | 可以（手动） | 可以 | 同 Lima |
@@ -161,6 +162,65 @@ VMware / libvirt / Hyper-V 上跑"。
 
 **结论：** 如果你已经在 Canonical 生态里了，是合理的第二选择。
 包起来的功夫跟 Lima 一样。
+
+### Apple 的 `container`（github.com/apple/container）
+
+是什么：Apple 官方的 Swift 工具（Apache 2.0），把 Linux **container** 跑成
+**轻量 VM** —— 一个 container 一个 VM，不是一个共享 VM 装所有 container。
+底层也是 Apple `Virtualization.framework`（跟 OrbStack 一套），所以
+syscall 层是平级关系，不是"换掉 OrbStack"的关系。OCI 兼容（吃和吐标准
+container image）。截至 2026-06 还是 pre-1.0；README 自己说
+"stability only guaranteed within patch versions"。
+
+**要求：** macOS 26 全功能，macOS 15 网络受限，**只支持 Apple Silicon**。
+Intel 不支持。
+
+**优点：**
+
+- Apple 亲儿子 —— macOS 26 新的 Virtualization 增强一发布就用上
+- 每个 container 独立 VM，比共享 VM 的隔离更强（container 逃逸也碰不到宿主）
+- 单 container 内存开销比完整 VM 小（Apple 自述：2 GB 跑 busy app vs 完整 VM 约 8 GB）
+- 开源，Apache 2.0
+- `container` 构出来的 OCI image 跑在 Docker / Podman / k8s 上，反之亦然
+
+**缺点：**
+
+- **Pre-1.0** —— API 稳定性没保证，minor 版本之间可能 break
+- **只支持 Apple Silicon** —— Intel Mac 整个 cohort 被砍
+- macOS 26 才完整网络能力；macOS 15 网络受限（不能 container-to-container、
+  不能多 network、IP 子网偶发 bug）
+- 内存 ballooning 只支持一半：container VM 里释放的内存不真还回宿主
+  —— 长时间跑大内存负载可能需要定期重启
+- **没有"一个持久的 Linux 系统"的概念** —— 每个 container 都是临时的独立
+  VM。要装 Node + Python + Go + Rust + starship 得打成一个
+  自定义 OCI image 把这些全 bake 进去（工作从 `setup/provision.sh`
+  在活 VM 里跑移到 CI build 步骤）
+- 没有 `container shell` 等价于 `orbctl shell` —— "进 VM 里随手改"
+  这个循环没了
+- 宿主文件系统共享是**显式 per-container mount**，不是自动挂
+
+**结论：** atelier 选错了工具。架构对不上：
+
+- atelier 要**一个持久的 Linux 系统**把工具装进去。apple/container 要 **N 个
+  临时的每 container 一个 VM**。
+- atelier 的 `bin/devbox reset` = nuke VM 重跑 `setup/provision.sh`
+  （~5 分钟、幂等、所有工具重装）。apple/container 里，"reset" = 删
+  container 重拉 image —— 但如果你 image 是裸 Ubuntu 啥都没装，Node/Python/Go
+  之类就丢了，除非你 build 时就 bake 进 image。
+- atelier 需要 SSH 进 VM（`ssh -L 7456:127.0.0.1:7456 ...` 把
+  open-design web UI 隧道出来）。apple/container 没 SSH 故事，daemon
+  得换方式暴露。
+- "自动共享 `/Users/lazy/...` → `/mnt/mac/...`" 是 atelier 的核心
+  UX。apple/container 要求每 container 显式 mount 配置。
+
+**什么时候 apple/container 是对的？** 如果 atelier 是个 *container 化微服务
+工作台* —— "为 k8s demo 拉 12 个临时 OCI container" —— per-container-VM 模型
+正合适。对于"我要个 Linux 开发机长住"这件事，OrbStack 的模型更对。
+
+**两边都支持呢？** `bin/devbox` 很小（~250 行，8 个子命令对应 8 个小函数）。
+加 `BACKEND=apple-container` 在工程上能做 —— 但要等 Apple container 到 1.0、
+CLI / image build 流程稳定了再说。在那之前，把整套 `setup/provision.sh`
+ 烤进 CI image 的摩擦比 atelier 想承担的大。
 
 ## 如果我不是 macOS？
 

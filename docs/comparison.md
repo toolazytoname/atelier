@@ -1,4 +1,4 @@
-# Why OrbStack? (vs Docker Desktop, Lima, Vagrant, Multipass)
+# Why OrbStack? (vs Docker Desktop, Lima, Vagrant, Multipass, Apple's container)
 
 > If you already use one of these and it works, you don't need
 > atelier. If you're starting fresh on macOS Apple Silicon and
@@ -9,6 +9,7 @@
 | Tool | Apple Silicon perf | Reset in seconds | Shared mounts | SSH access | atelier-friendly? |
 |------|--------------------|------------------|---------------|------------|-------------------|
 | **OrbStack (atelier's choice)** | excellent | yes | yes (auto) | yes | ✅ ships with `bin/devbox` |
+| [Apple's `container`](https://github.com/apple/container) | excellent | yes (per container) | explicit per-container | no | no — wrong mental model (see below) |
 | Docker Desktop | good | yes (container) | sometimes | clunky | partial — needs rewrite |
 | Lima | good | yes | yes (manual) | yes | needs ~1 day of glue |
 | colima | good | yes | yes (manual) | yes | same as Lima |
@@ -192,6 +193,84 @@ Built on Apple's Hypervisor framework on macOS.
 
 **Verdict:** A reasonable second choice if you're already in
 the Canonical ecosystem. Same effort as Lima to wrap.
+
+### Apple's `container` (github.com/apple/container)
+
+What it is: Apple's first-party tool (Swift, Apache 2.0) to create
+and run Linux **containers** as **lightweight VMs** — one VM per
+container, not one shared VM hosting all containers. Uses the same
+Apple `Virtualization.framework` underneath that OrbStack uses, so
+it's a peer of OrbStack at the syscall level, not a replacement for
+it. OCI-compatible (consumes and produces standard container
+images). As of 2026-06, pre-1.0; README says "stability only
+guaranteed within patch versions."
+
+**Requirements:** macOS 26 for full features, macOS 15 with reduced
+networking, Apple Silicon only. No Intel.
+
+**Strengths:**
+
+- First-party from Apple — uses new macOS 26 Virtualization
+  enhancements the day they ship
+- One VM per container is a stronger isolation story than
+  shared-VM (a container escape still doesn't reach the host)
+- Memory overhead per container is much lower than a full VM
+  (per Apple: 2 GB for a busy app vs ~8 GB for a full VM)
+- Open source, Apache 2.0
+- OCI images built with `container` run on Docker / Podman / k8s
+  and vice versa
+
+**Weaknesses:**
+
+- **Pre-1.0** — no API stability guarantee, can break between
+  minor versions
+- Apple Silicon only — drops the Intel-Mac cohort entirely
+- macOS 26 only for the full networking story; macOS 15 has
+  reduced networking (no container-to-container, no multiple
+  networks, occasional IP-subnet bugs)
+- Memory ballooning is partial: free memory inside a container
+  VM doesn't get returned to the host — long-running memory-heavy
+  workloads may need periodic restart
+- No concept of "one persistent Linux system" — every container
+  is its own ephemeral VM. To install Node + Python + Go + Rust +
+  starship you'd build a custom OCI image with all of that
+  baked in (move the work from `setup/provision.sh` running in a
+  live VM to a CI build step)
+- No `container shell` equivalent of `orbctl shell` — the
+  "drop into the VM and hack" loop doesn't exist
+- Host filesystem sharing is explicit per-container, not
+  auto-mounted
+
+**Verdict:** Wrong tool for atelier. The architectural mismatch:
+
+- atelier wants **one persistent Linux system** to install tools
+  into. apple/container wants **N ephemeral per-container VMs**.
+- atelier's `bin/devbox reset` = nuke the VM and re-run
+  `setup/provision.sh` (~5 min, idempotent, all tools reinstalled).
+  In apple/container, "reset" means delete the container and pull
+  the image again — but if your image is the standard Ubuntu one
+  with no tools, you've lost Node/Python/Go/etc. unless they were
+  baked into the image at build time.
+- atelier needs SSH into the VM (`ssh -L 7456:127.0.0.1:7456 ...`
+  to tunnel the open-design web UI). apple/container has no SSH
+  story; you'd expose the daemon another way.
+- The "auto-share `/Users/lazy/...` → `/mnt/mac/...`" UX is
+  a core atelier feature. apple/container requires explicit
+  per-container mount configuration.
+
+**When would apple/container be the right answer?** If atelier
+were a *containerized microservices workbench* — "spin up 12
+ephemeral OCI containers for a k8s demo" — the per-container-VM
+model would be a perfect fit. For "I want a Linux dev box to live
+in", OrbStack is closer to the right model.
+
+**What about supporting both?** `bin/devbox` is small (~250 lines,
+8 subcommands mapping to 8 small functions). Adding
+`BACKEND=apple-container` is plausible — but only once Apple
+container hits 1.0 and stabilises its CLI / image-build workflow.
+Until then, building a CI image that bakes in our entire
+`setup/provision.sh` is more friction than atelier wants to take
+on.
 
 ## What if I'm not on macOS?
 
