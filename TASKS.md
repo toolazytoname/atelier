@@ -18,14 +18,16 @@ Shipping atelier v1.0.0 — open-source release.
 
 ## Open
 
-- [ ] **Publish GitHub release v1.0.0** (two manual UI clicks —
-      see `RELEASE-v1.0.0.md`):
-  1. https://github.com/toolazytoname/atelier/actions/workflows/release.yml
-     → "Run workflow" → Run (the workflow auto-creates the release
-     from the `CHANGELOG.md` `[1.0.0]` section)
-  2. Settings → Features → enable Discussions
-- After both: verify the badge at the top of README resolves to a
-  real release page (not 404).
+(none — v1.0.0 is live)
+
+## Post-release: verify these land cleanly
+
+- [ ] Delete `RELEASE-v1.0.0.md` once the GitHub Release page is
+      verified live (the file duplicates `CHANGELOG.md [1.0.0]` —
+      kept only as a paste-into-UI fallback for the manual step).
+- [ ] Visually verify the README badges resolve:
+      - `github/v/release/toolazytoname/atelier` → should show "v1.0.0"
+      - `github/discussions/toolazytoname/atelier` → should show a count
 
 ## Done (recent)
 
