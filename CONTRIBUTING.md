@@ -52,15 +52,21 @@ You can iterate on any file under `setup/`, `bin/`, or `docs/`, then
 `provision.sh` has a single env var, `CN_MIRROR`, that switches between
 mainland-China mirrors and international sources. Default is `1` (CN). If
 you change a default URL, update both branches — and test the international
-branch with `CN_MIRROR=0 ./setup/provision.sh` before sending a PR. We have
-CI for this (see `.github/workflows/test-mirrors.yml` once it lands).
+branch with `CN_MIRROR=0 ./setup/provision.sh` before sending a PR. CI
+covers both branches (`.github/workflows/test-mirrors.yml`).
 
 ## Project layout conventions
 
 ```
 bin/         host-side wrappers (run on the Mac)
 setup/       one-shot VM bootstrap + passthrough + uninstall scripts
-docs/        design rationale, longer-form notes
+docs/        design rationale, longer-form notes (EN + .zh-CN.md mirror)
+assets/      logo.svg / banner.svg / social-card.svg
+examples/    minimal runnable demos (currently: harness-demo)
+.claude/     project-level settings.json (allow + deny list)
+.mcp.json    open-design MCP bridge config (consumed by CC inside the VM)
+.github/     workflows/, ISSUE_TEMPLATE/, PULL_REQUEST_TEMPLATE.md
+TASKS.md     persistent task checklist (survives /clear)
 README.md    English, top-level
 CLAUDE.md    English, instructions for Claude Code in this project
 README.zh-CN.md / CLAUDE.zh-CN.md   Chinese mirrors
@@ -69,6 +75,15 @@ README.zh-CN.md / CLAUDE.zh-CN.md   Chinese mirrors
 Anything run **inside** the VM goes in `setup/` (it has to land on the
 host filesystem first). Anything run **on the host** goes in `bin/`. Never
 mix the two.
+
+When adding a new feature that ships in both languages, add a file under
+`docs/` (or update an existing one) **and** its `*.zh-CN.md` mirror in
+the same PR. The README's file-layout block must list both.
+
+The `TASKS.md` file is the persistent task tracker — it survives
+`/clear` and lives in git. When you pick up work after a session break,
+read it first. The in-session TaskCreate / TaskList tools die on `/clear`;
+`TASKS.md` doesn't.
 
 ## Asking questions
 
@@ -123,14 +138,20 @@ make doctor                        # 确认全绿
 
 `provision.sh` 只有一个环境变量 `CN_MIRROR`，在国内/国际镜像间切换。默认是 `1`（国内）。
 如果你改了默认 URL，两个分支都要改——并且发 PR 之前用 `CN_MIRROR=0 ./setup/provision.sh`
-测过国际分支。等 CI 落地后会跑这个（见 `.github/workflows/test-mirrors.yml`）。
+测过国际分支。CI 已经覆盖两个分支（见 `.github/workflows/test-mirrors.yml`）。
 
 ## 目录约定
 
 ```
 bin/         宿主端包装器（在 Mac 上跑）
 setup/       一次性 VM 引导 + env 透传 + 卸载脚本
-docs/        设计理由、长篇说明
+docs/        设计理由、长篇说明（EN + .zh-CN.md 镜像）
+assets/      logo.svg / banner.svg / social-card.svg
+examples/    最小可运行 demo（目前：harness-demo）
+.claude/     项目级 settings.json（白名单 + deny 名单）
+.mcp.json    open-design MCP 桥（VM 里的 CC 消费）
+.github/     workflows/、ISSUE_TEMPLATE/、PULL_REQUEST_TEMPLATE.md
+TASKS.md     持久化任务清单（跨 /clear 还在）
 README.md    英文，总览
 CLAUDE.md    英文，给 Claude Code 的指令
 README.zh-CN.md / CLAUDE.zh-CN.md   中文镜像
@@ -138,6 +159,12 @@ README.zh-CN.md / CLAUDE.zh-CN.md   中文镜像
 
 **在 VM 里跑的**东西放 `setup/`（得先落到宿主文件系统）。**在宿主跑的**东西放 `bin/`。
 不要混。
+
+加新功能（双语上线）时，`docs/` 里加文件**同时**加 `*.zh-CN.md` 镜像，**同一个 PR**。
+README 的 file-layout 块要把两者都列上。
+
+`TASKS.md` 是持久化任务清单——跨 `/clear` 还在、跟 git 走。session 中断后接着干，
+先读它。session 内的 TaskCreate / TaskList 工具 `/clear` 一按就清，`TASKS.md` 不会。
 
 ## 问问题
 
