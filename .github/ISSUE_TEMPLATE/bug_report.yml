@@ -13,7 +13,7 @@ body:
   - type: textarea
     id: doctor
     attributes:
-      label: `bin/devbox doctor` output
+      label: "`bin/devbox doctor` output"
       description: Paste the full output verbatim. If the command itself fails, paste the error.
       render: shell
     validations:
@@ -31,7 +31,7 @@ body:
     id: macos
     attributes:
       label: macOS version (`sw_vers`)
-      placeholder: e.g. ProductName: macOS, ProductVersion: 15.3, BuildVersion: 24D60
+      placeholder: "e.g. ProductName: macOS, ProductVersion: 15.3, BuildVersion: 24D60"
     validations:
       required: true
 
