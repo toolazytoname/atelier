@@ -6,7 +6,7 @@
 </p>
 
 <p align="center">
-  <strong>让 Claude Code 跑在一个一次性的 Linux 虚拟机里。宿主机保持干净。</strong>
+  <strong>macOS + Claude Code，隔离在一个一次性的 Linux 虚拟机里。宿主机保持干净。</strong>
 </p>
 
 <p align="center">
@@ -18,7 +18,7 @@
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
   <a href="https://orbstack.dev"><img src="https://img.shields.io/badge/VM-OrbStack-blueviolet" alt="VM: OrbStack"></a>
-  <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Ubuntu%2024.04-lightgrey" alt="Platform">
+  <img src="https://img.shields.io/badge/platform-macOS%2013%2B-lightgrey" alt="Platform: macOS 13+">
   <img src="https://img.shields.io/badge/powered_by-Claude%20Code-D97757" alt="Powered by Claude Code">
 </p>
 
@@ -29,6 +29,14 @@
 OrbStack 的 Linux 虚拟机里。宿主机只承担真正必须承担的：终端、浏览器
 标签页、OrbStack 本身。Node、Python、Go、Rust、各路 MCP 全在 VM 里，
 跟 VM 一起活、跟 VM 一起死，5 分钟就能从零重建。
+
+> **前置条件（先看这条）：** atelier **只在 macOS 上跑**（13+，
+> 推荐 Apple Silicon；Intel 也能用）。你需要装
+> [OrbStack](https://orbstack.dev) —— 这是宿主上唯一装的依赖。
+> 别的什么都不会装到你的 Mac 上。**Linux 和 Windows 不支持**
+> （"宿主保持惰性"这套架构只在宿主跟开发环境是分开的两台机器时
+> 才有意义）。原因见
+> [docs/comparison.zh-CN.md § "如果我不是 macOS？"](docs/comparison.zh-CN.md#如果我不是-macos)。
 
 ## 快速开始
 

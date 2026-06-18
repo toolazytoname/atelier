@@ -6,7 +6,7 @@
 </p>
 
 <p align="center">
-  <strong>Run Claude Code in a disposable Linux VM. Your host stays clean.</strong>
+  <strong>macOS + Claude Code, isolated in a disposable Linux VM. Your host stays clean.</strong>
 </p>
 
 <p align="center">
@@ -23,7 +23,7 @@
   </a>
   <a href="https://github.com/toolazytoname/atelier/releases"><img src="https://img.shields.io/github/v/release/toolazytoname/atelier" alt="Release"></a>
   <a href="https://github.com/toolazytoname/atelier/discussions"><img src="https://img.shields.io/github/discussions/toolazytoname/atelier" alt="Discussions"></a>
-  <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Ubuntu%2024.04-lightgrey" alt="Platform">
+  <img src="https://img.shields.io/badge/platform-macOS%2013%2B-lightgrey" alt="Platform: macOS 13+">
   <img src="https://img.shields.io/badge/powered_by-Claude%20Code-D97757" alt="Powered by Claude Code">
 </p>
 
@@ -36,6 +36,15 @@ host Mac is reduced to its true minimum: a terminal, a browser tab, and
 OrbStack itself. No Node, no Python, no Go, no Rust, no MCP servers — all
 of it lives in the VM, dies with the VM, and can be rebuilt from scratch
 in ~5 minutes.
+
+> **Prerequisites (read this first):** atelier runs **on macOS only**
+> (13+, Apple Silicon recommended; Intel works). You need
+> [OrbStack](https://orbstack.dev) — that's the only host dependency.
+> Nothing else gets installed on your Mac. **Linux and Windows are
+> not supported** (the "host stays inert" architecture only makes
+> sense when the host is something separate from the dev environment).
+> See [docs/comparison.md § "What if I'm not on macOS?"](docs/comparison.md#what-if-im-not-on-macos)
+> for the reasoning.
 
 ## Quick start
 
