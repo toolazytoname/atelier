@@ -61,20 +61,20 @@ fi
 if [[ $DO_ALL -eq 1 ]]; then
   warn "removing OrbStack itself"
   if [[ -d /Applications/OrbStack.app ]]; then
-    sudo rm -rf /Applications/OrbStack.app && ok "OrbStack.app removed" || warn "could not remove /Applications/OrbStack.app"
+    if sudo rm -rf /Applications/OrbStack.app; then ok "OrbStack.app removed"; else warn "could not remove /Applications/OrbStack.app"; fi
   fi
   if [[ -d "$HOME/.orbstack" ]]; then
-    rm -rf "$HOME/.orbstack" && ok "~/.orbstack removed" || warn "could not remove ~/.orbstack"
+    if rm -rf "$HOME/.orbstack"; then ok "$HOME/.orbstack removed"; else warn "could not remove $HOME/.orbstack"; fi
   fi
   if [[ -d "$HOME/Library/Application Support/OrbStack" ]]; then
-    rm -rf "$HOME/Library/Application Support/OrbStack" && ok "OrbStack support dir removed" || warn "could not remove OrbStack support dir"
+    if rm -rf "$HOME/Library/Application Support/OrbStack"; then ok "OrbStack support dir removed"; else warn "could not remove OrbStack support dir"; fi
   fi
   # Optional: remove a devbox symlink the user may have placed in /usr/local/bin
   if [[ -L /usr/local/bin/devbox ]]; then
-    sudo rm -f /usr/local/bin/devbox && ok "/usr/local/bin/devbox symlink removed" || true
+    if sudo rm -f /usr/local/bin/devbox; then ok "/usr/local/bin/devbox symlink removed"; fi
   fi
   if command -v brew >/dev/null 2>&1 && brew list --cask 2>/dev/null | grep -q orbstack; then
-    brew uninstall --cask orbstack && ok "brew cask removed" || warn "brew uninstall failed (run manually)"
+    if brew uninstall --cask orbstack; then ok "brew cask removed"; else warn "brew uninstall failed (run manually)"; fi
   fi
 fi
 

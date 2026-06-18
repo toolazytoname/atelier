@@ -83,15 +83,15 @@ if ! command -v node >/dev/null 2>&1 || [[ "$(node -v | sed 's/v//;s/\..*//')" -
   archive="${extracted_dir}.tar.xz"
   url="${NPM_BIN}/node/${NODE_VERSION}/${archive}"
   echo "   downloading $url"
-  curl -fsSL "$url" -o /tmp/$archive
-  sudo tar -C /usr/local -xJf /tmp/$archive
+  curl -fsSL "$url" -o "/tmp/$archive"
+  sudo tar -C /usr/local -xJf "/tmp/$archive"
   sudo ln -sf "/usr/local/${extracted_dir}/bin/node" /usr/local/bin/node
   sudo ln -sf "/usr/local/${extracted_dir}/bin/npm"  /usr/local/bin/npm
   sudo ln -sf "/usr/local/${extracted_dir}/bin/npx"  /usr/local/bin/npx
   sudo ln -sf "/usr/local/${extracted_dir}/bin/corepack" /usr/local/bin/corepack
-  rm -f /tmp/$archive
+  rm -f "/tmp/$archive"
   # Remove the previous default (22) install if it's around
-  for old in /usr/local/node-v22*-linux-${arch}; do
+  for old in /usr/local/node-v22*-linux-"${arch}"; do
     [[ -d "$old" ]] && sudo rm -rf "$old"
   done
 fi
@@ -139,6 +139,7 @@ if ! command -v go >/dev/null 2>&1 || [[ "$(go version | awk '{print $3}' | sed 
     curl -fsSL --retry 3 "https://go.dev/dl/go${GO_VERSION}.linux-${arch}.tar.gz" \
       | sudo tar -C /usr/local -xz
   fi
+  # shellcheck disable=SC2016  # $PATH / $HOME expand on the VM, not here
   echo 'export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin
 export GOPROXY=https://goproxy.cn,direct' | sudo tee /etc/profile.d/go.sh >/dev/null
 fi
@@ -307,7 +308,8 @@ if ! command -v starship >/dev/null 2>&1; then
     sh /tmp/starship-install.sh -y -b "$HOME/.local/bin" >/dev/null
     sudo ln -sf "$HOME/.local/bin/starship" /usr/local/bin/starship
   else
-    printf '   %s starship install script came back empty/blocked; skipping (a plain \$PS1 works fine)\n' "$(printf '\033[1;33m!\033[0m')"
+    # shellcheck disable=SC2016  # $PS1 is a literal in the message
+    printf '   %s starship install script came back empty/blocked; skipping (a plain $PS1 works fine)\n' "$(printf '\033[1;33m!\033[0m')"
   fi
   rm -f /tmp/starship-install.sh
   set -e
@@ -378,7 +380,7 @@ mkdir -p "$HOME/Code"
 if [[ ! -e "$HOME/Code/crack" ]] && [[ -e /mnt/mac/Users/lazy/Code/crack ]]; then
   ln -sfn /mnt/mac/Users/lazy/Code/crack "$HOME/Code/crack"
 fi
-ok "~/Code/crack -> /mnt/mac/Users/lazy/Code/crack"
+ok "$HOME/Code/crack -> /mnt/mac/Users/lazy/Code/crack"
 
 step "DONE"
 printf '\n\033[1;32m✓ atelier ready. Re-login (or: exec zsh) for shell changes to take effect.\033[0m\n'

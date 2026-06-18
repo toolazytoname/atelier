@@ -121,6 +121,7 @@ cmd_claude() {
   # Daemon + CC share one orb run so they live and die together. The daemon
   # is a background process inside the same VM shell; CC talks to it via the
   # local MCP (.mcp.json) over loopback. Ctrl-C kills the whole group.
+  # shellcheck disable=SC2016  # $VAR expansion happens on the VM, not here
   exec orbctl run -m "$VM_NAME" "${extra[@]}" bash -lc '
     export PATH="$HOME/.local/bin:/usr/local/node-v24.11.0-linux-arm64/bin:$PATH"
     cd "/mnt/mac/Users/lazy/Code/crack/atelier"
@@ -157,6 +158,7 @@ cmd_gui() {
   # Start the daemon in its own long-lived `orb run` (it stays alive for
   # the duration of the tunnel). Bind only to loopback — the SSH tunnel
   # is what bridges traffic to the host.
+  # shellcheck disable=SC2016  # $VAR expansion happens on the VM, not here
   orbctl run -m "$VM_NAME" bash -lc '
     export PATH="$HOME/.local/bin:$PATH"
     if ! pgrep -f "od.mjs" >/dev/null 2>&1; then
@@ -169,13 +171,14 @@ cmd_gui() {
       done
     fi
     od status 2>&1 | sed "s/^/  /"
-    echo "[devbox] daemon ready on 127.0.0.1:'$port'. Ctrl-C the bin/devbox gui process to stop the tunnel."
+    echo "[devbox] daemon ready on 127.0.0.1:'"$port"'. Ctrl-C the bin/devbox gui process to stop the tunnel."
     exec sleep infinity
   ' &
   local daemon_pid=$!
 
-  # Tidy up on Ctrl-C
-  trap "kill $daemon_pid 2>/dev/null; wait $daemon_pid 2>/dev/null" EXIT INT TERM
+  # Tidy up on Ctrl-C. Single quotes so $daemon_pid is evaluated when the
+  # trap fires (not now at trap-set time).
+  trap 'kill "$daemon_pid" 2>/dev/null; wait "$daemon_pid" 2>/dev/null' EXIT INT TERM
 
   # OrbStack exposes Linux VMs as `user@machine@orb` over SSH.
   ssh -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/dev/null \

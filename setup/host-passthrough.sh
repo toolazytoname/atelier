@@ -69,7 +69,7 @@ trap 'rm -f "$tmp"' EXIT
 orbctl run -m "$VM_NAME" bash -c "mkdir -p '$(dirname "$DEST")'"
 
 # Copy file in via stdin (avoids needing push/pull for one small file)
-cat "$tmp" | orbctl run -m "$VM_NAME" bash -c "cat > '$DEST'"
+orbctl run -m "$VM_NAME" bash -c "cat > '$DEST'" < "$tmp"
 
 echo
 echo "[passthrough] wrote $DEST inside $VM_NAME"
