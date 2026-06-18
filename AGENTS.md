@@ -214,7 +214,24 @@ Ask only when:
 | VM boots but tools missing | provision didn't finish | `bin/devbox provision` |
 | `bin/devbox: command not found` | host PATH | `export PATH="/Users/lazy/Code/crack/claude/atelier/bin:$PATH"` or `make install-bin` |
 
-## 7. TL;DR
+## 7. Where to learn more
+
+These docs aren't required reading — but if you need depth on a
+specific question, point at these rather than re-deriving:
+
+| Question | Doc |
+|----------|-----|
+| How is the host / VM split wired? Why these specific pieces? | [`docs/architecture.md`](docs/architecture.md) |
+| What's the yolo-safety threat model? What does the wall guarantee? | [`docs/security-model.md`](docs/security-model.md) |
+| Why OrbStack over Docker Desktop / Lima / Vagrant / Multipass? | [`docs/comparison.md`](docs/comparison.md) |
+| The harness loop in detail (stages, isolation, score card)? | [`docs/workflow.md`](docs/workflow.md) |
+| What problem does this project solve, and why these choices? | [`docs/design.md`](docs/design.md) |
+
+If you're Claude Code, prefer `CLAUDE.md` — it has project-specific
+conventions and triggers the yolo-harness loop on the right natural
+language cues.
+
+## 8. TL;DR
 
 - **`bin/devbox run <cmd>` is the universal escape hatch** for
   any non-trivial work
