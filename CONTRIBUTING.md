@@ -93,7 +93,7 @@ maintainers are also active in the issue tracker, so don't worry about
 
 ---
 
-# 贡献指南
+## 贡献指南
 
 感谢你关注这个项目。`atelier` 的整个目标就是让用 Claude Code 干活不那么痛苦——
 所以贡献流程本身也跟工具的定位一样轻量。

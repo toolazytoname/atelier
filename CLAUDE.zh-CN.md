@@ -1,11 +1,13 @@
 # CLAUDE.md — atelier 开发沙箱（中文版）
 
 ## 这个项目是什么
+
 一个自包含、**隔离的 Linux 开发沙箱**，用来跑任何你想做的东西。整个工作流——代码、
 构建、测试、依赖——都在一个叫 `atelier` 的 OrbStack Linux VM 里。宿主 Mac 只承担
 Claude Code 本身。
 
 ## 东西在哪
+
 **全部在 VM 里跑。** 宿主只是个瘦客户端：终端、浏览器、OrbStack。
 
 - **宿主（Mac）**：终端显示、浏览器标签指向 `http://localhost:7456`（经 SSH
@@ -104,6 +106,7 @@ Claude Code 本身。
 [`docs/workflow.md`](docs/workflow.md)。
 
 ## 日常循环
+
 ```bash
 # 一次性
 brew install --cask orbstack                            # 如果还没装

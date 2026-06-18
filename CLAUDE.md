@@ -1,6 +1,7 @@
 # CLAUDE.md — atelier dev sandbox
 
 ## What this project is
+
 A self-contained, **isolated Linux dev sandbox** for building whatever the
 user wants. The whole workflow — code, builds, tests, dependencies — lives
 inside an OrbStack Linux VM called `atelier`. The host Mac only runs
@@ -118,6 +119,7 @@ guards, parallel reviewer patterns), see
 [`docs/workflow.md`](docs/workflow.md).
 
 ## Where things live
+
 **Everything runs inside the VM.** The host is a thin client: a
 terminal, a browser, and OrbStack.
 
@@ -137,6 +139,7 @@ terminal, a browser, and OrbStack.
   OrbStack's auto-share. Edit either side; execution stays in the VM.
 
 ## Daily loop
+
 ```bash
 # one-time
 brew install --cask orbstack                            # if missing
@@ -206,7 +209,7 @@ bin/devbox reset                                        # nuke + recreate (DESTR
 - **`orb: command not found`** → `export PATH="/opt/homebrew/bin:$PATH"`
   or symlink `bin/devbox` into your PATH.
 - **`atelier` not running** → `bin/devbox provision` (creates + starts
-  + provisions) or `orbctl start atelier`.
+  - provisions) or `orbctl start atelier`.
 - **Port 8000 conflict** (Python already listening on host) — use a
   different port inside the VM; the VM has its own network namespace so
   this shouldn't bite unless you forward explicitly.

@@ -1,3 +1,4 @@
+<!-- markdownlint-disable MD041 first-line-h1 -->
 <p align="center">
   <a href="README.zh-CN.md">
     <img src="assets/banner.svg" alt="atelier — 一个隔离、可丢弃的 Linux 开发沙箱" width="820">

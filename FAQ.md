@@ -62,6 +62,7 @@ screenshots stream in), the host-CC experience is snappier — at
 the cost of breaking the isolation model.
 
 **Recommendation:**
+
 - Default: `bin/devbox claude`
 - yolo with `--dangerously-skip-permissions`: `bin/devbox claude`,
   no exceptions
@@ -107,7 +108,7 @@ They don't share state and don't conflict. Default name is `atelier`.
 
 ## Running things
 
-### I ran `pnpm test` and got `command not found`.
+### I ran `pnpm test` and got `command not found`
 
 You ran it on the host. The host has no pnpm. Use
 `bin/devbox run pnpm test`. See the SKILL "atelier" (if installed
@@ -125,7 +126,7 @@ from your host shell and writes them to `/etc/environment.d/host-proxy.conf`
 inside the VM. Re-run it any time you rotate a token. The
 `bin/devbox claude` launcher re-reads these on every invocation.
 
-### The browser tab shows "connection refused" on http://localhost:7456.
+### The browser tab shows "connection refused" on <http://localhost:7456>
 
 `bin/devbox gui` is not running, or it died. Open a new terminal and
 run `bin/devbox gui`. Ctrl-C in that terminal tears down both the

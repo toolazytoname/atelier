@@ -49,6 +49,7 @@ spawn. This stage is fast — minutes, not hours.
 via the `Agent` tool with a developer-flavored prompt.
 
 Properties:
+
 - Own context window
 - Own session history
 - Writes to the project tree
@@ -106,7 +107,7 @@ The orchestrator (stage 1) consumes the score cards and decides:
 
 The gate is also a **checkpoint**: it persists the score card and
 a git ref so a crash mid-loop can resume. See
-[`continuous-agent-loop`](#continuous-agent-loop) below.
+`continuous-agent-loop` below.
 
 ### 5. Commit / open PR (or escalate)
 
@@ -133,7 +134,7 @@ evaluator never share context**. The reasons:
 
 Three isolation mechanisms, in increasing weight:
 
-#### Mechanism A: `Agent` tool (subagent)
+### Mechanism A: `Agent` tool (subagent)
 
 The parent CC instance uses the `Agent` tool to spawn a subagent.
 The subagent:
@@ -147,7 +148,7 @@ The subagent:
 This is the right tool for short-lived evaluators (a single file
 review, a single test run). Cheap, fast, isolated.
 
-#### Mechanism B: full CC process (`bin/devbox run claude ...`)
+### Mechanism B: full CC process (`bin/devbox run claude ...`)
 
 For longer-running evaluators (an entire test suite, a visual
 regression pass over 30 screenshots), spawn a full CC process
@@ -164,7 +165,7 @@ This is the right tool for evaluators that need real tool use —
 file reading, shell, browser, network — but should not pollute the
 generator's session.
 
-#### Mechanism C: `council` skill (N reviewers at once)
+### Mechanism C: `council` skill (N reviewers at once)
 
 For breadth, the `everything-claude-code:council` skill spawns N
 reviewers (one per lens) in a single tool call. Each is a
@@ -181,7 +182,7 @@ companion `loop-operator`) handle the boring-but-critical parts:
 
 - **Iteration counter** — `MAX_ITERATIONS=5` by default
 - **Checkpointing** — after each gate, persist the score card
-  + git SHA so a crash can resume
+  - git SHA so a crash can resume
 - **Stuck detection** — if `score < threshold` for 2 consecutive
   iterations with the same blocker, escalate (the spec is
   probably wrong)

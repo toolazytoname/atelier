@@ -52,7 +52,7 @@ Project files:  host    /Users/lazy/Code/crack/<project>
 | Browser automation | ❌ | ✅ |
 | `sudo anything` | ❌ | ❌ (deny-listed) |
 | `rm -rf /` / `rm -rf ~` | ❌ | ❌ (deny-listed) |
-| `curl ... | bash` | ❌ | ❌ (deny-listed) |
+| `curl ... \| bash` | ❌ | ❌ (deny-listed) |
 
 If the toolchain **only exists in the VM** (Node, pnpm, uv,
 cargo, go, gh, the open-design daemon, MCP servers) — your
@@ -67,6 +67,7 @@ state.** Edits from the VM appear on the host instantly (and
 vice versa).
 
 This means:
+
 - You can `Read` a file from the host without booting the VM
 - You can `Edit` a file on the host; the VM sees the change
 - You can `Bash(bin/devbox run ls /mnt/mac/...)` to verify

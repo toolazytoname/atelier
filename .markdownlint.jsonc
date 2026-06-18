@@ -2,8 +2,9 @@
   // https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md
   "default": true,
 
-  // Code fences must have a language tag
-  "MD040": { "allowed_languages": ["bash", "sh", "shell", "json", "yaml", "yml", "javascript", "typescript", "html", "css", "svg", "diff", "text"] },
+  // Code fences may omit a language tag (ASCII art, generic output).
+  // Where a real language IS known, prefer specifying it.
+  "MD040": false,
 
   // Allow inline HTML — we use it in the README and banner
   "MD033": false,

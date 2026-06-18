@@ -47,6 +47,7 @@ freemium (Pro adds snapshots, multiple VMs at once, custom
 resources — none of which atelier needs).
 
 **Strengths:**
+
 - 4-vCPU Ubuntu VM boots in ~4 s, uses ~250 MB RAM idle
 - `/Users/lazy` is auto-shared as `/mnt/mac` — no `sshfs`, no
   `vagrant rsync`
@@ -57,6 +58,7 @@ resources — none of which atelier needs).
   can use OrbStack's UI directly)
 
 **Weaknesses:**
+
 - macOS-only (uses Apple's Virtualization framework, which is
   macOS-only)
 - Closed source — if OrbStack disappears, atelier breaks
@@ -73,10 +75,12 @@ framework (since 4.16). Gives you a Linux VM running Docker
 daemon.
 
 **Strengths:**
+
 - Most developers already have it
 - Excellent Docker ergonomics (Compose, buildx, multi-arch)
 
 **Weaknesses:**
+
 - Optimized for containers, not bare Linux VMs — getting a full
   systemd / apt / non-containerized process tree is awkward
 - No `orbctl`-equivalent CLI for "run a non-Docker process in the
@@ -98,11 +102,13 @@ macOS / Linux. Supports multiple VM backends (QEMU, vz for
 Apple Silicon, Hyper-V on Windows).
 
 **Strengths:**
+
 - Open source, CNCF-governed — won't disappear
 - Multi-platform (macOS, Linux, Windows via WSL2)
 - Standard `lima.yaml` config — easy to share reproducibly
 
 **Weaknesses:**
+
 - The Apple Silicon `vz` driver is less polished than OrbStack
   (slower boot, higher idle RAM, occasional mount staleness)
 - File sharing requires explicit `sshfs` or `9p` config — not
@@ -123,10 +129,12 @@ What it is: a Lima wrapper with friendlier defaults and a single
 `colima start` command.
 
 **Strengths:**
+
 - Simpler than raw Lima for the common case
 - Same underlying VM
 
 **Weaknesses:**
+
 - All of Lima's, plus its own opinions baked in (harder to
   customize)
 - No SSH UI; `colima ssh` instead of native SSH
@@ -140,11 +148,13 @@ environment, run it on VirtualBox / Parallels / VMware / libvirt
 / Hyper-V".
 
 **Strengths:**
+
 - Cross-platform, well-known
 - Vagrantfile is a single source of truth
 - Wide provider support
 
 **Weaknesses:**
+
 - The VirtualBox provider is slow on Apple Silicon (no native
   Apple Virtualization)
 - No auto-shared filesystem — requires `vagrant rsync` or NFS
@@ -166,11 +176,13 @@ What it is: Canonical's "Ubuntu VMs on macOS / Windows / Linux".
 Built on Apple's Hypervisor framework on macOS.
 
 **Strengths:**
+
 - First-class Ubuntu support
 - One CLI: `multipass launch`, `multipass shell`, `multipass exec`
 - `multipass mount` for shared files
 
 **Weaknesses:**
+
 - Less polished on Apple Silicon than OrbStack
 - `multipass mount` is `sshfs` under the hood — slower than
   OrbStack's auto-share

@@ -206,7 +206,7 @@ VM 是从大家都能用的同一份 `setup/provision.sh` 重建出来的。
 | 想…… | 看哪里 |
 |----------|------------|
 | 给 `bin/devbox` 加新子命令 | `bin/devbox` —— 加一个 `cmd_<name>()` 和一个 dispatch case |
-| 给 VM 加新工具 | `setup/provision.sh` —— 加一行 apt，或一个新的 `curl | tar` 块，或一个新的 `pip install` |
+| 给 VM 加新工具 | `setup/provision.sh` —— 加一行 apt，或一个新的 `curl \| tar` 块，或一个新的 `pip install` |
 | 改 VM 大小 | `bin/devbox` 的 `VM_*` 默认值，或 `make setup CPUS=8 MEMORY=16G DISK=128G` |
 | 换发行版 | `bin/devbox` 的 `VM_DISTRO`（默认 `ubuntu:24.04`）—— 必须是标准 OrbStack 镜像 |
 | 用 Lima / Docker 替换 OrbStack | 重写 `bin/devbox`。8 个子命令对应 8 个小函数，这是 1 天工作量，不是 1 周 |

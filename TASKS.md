@@ -3,6 +3,7 @@
 > **Persistent task checklist.** Survives `/clear`. Lives in git.
 >
 > Conventions:
+>
 > - `- [ ]` — todo
 > - `- [~]` — in progress
 > - `- [x]` — done
@@ -48,7 +49,7 @@ Shipping atelier v1.0.0 — open-source release.
       CHANGELOG section as the release body. Idempotent
       (updates in place). Future releases are no-touch.
 
-## Done (recent)
+## Done (earlier)
 
 - [x] **README: "Harness by default" section** — Highlights bullet
       added, Pillar 1 in the four-pillar table sharpened to

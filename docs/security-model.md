@@ -279,7 +279,7 @@ With atelier's configuration:
 | `Bash(rm -rf ~)` | ❌ | deny list |
 | `Bash(sudo ...)` | ❌ | deny list |
 | `Write` to `~/.ssh/id_rsa` | ❌ | deny list |
-| `Bash(curl ... | bash)` | ❌ | deny list |
+| `Bash(curl ... \| bash)` | ❌ | deny list |
 | `Bash(orbctl delete atelier)` | ✅ | allow list — but the wrapper confirms anyway |
 
 The "always prompts" category (`Bash(rm -rf ~)`,

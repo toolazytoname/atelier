@@ -86,6 +86,7 @@ for visual diff.
 
 **What it looks like in practice:** The agent writes the code. Then it
 must pass three gates before reporting "done":
+
 1. **Functional:** `verify` launches the app in a real browser, exercises
    the new feature, checks that nothing else broke.
 2. **Path coverage:** `e2e-runner` walks the user's day-one and day-N
@@ -152,6 +153,7 @@ project originated, and the international CDNs rate-limit CN egress
 aggressively. The `CN_MIRROR` env var switches to international sources.
 
 We deliberately *don't* mirror things that aren't slow:
+
 - Go's `dl.google.com` is fast from both egresses (~20 MB/s).
 - Rust's `static.rust-lang.org` works from both.
 - Docker's `download.docker.com` is fine for the small CLI package.

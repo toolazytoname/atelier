@@ -1,3 +1,4 @@
+<!-- markdownlint-disable MD041 first-line-h1 -->
 <p align="center">
   <a href="README.md">
     <img src="assets/banner.svg" alt="atelier — a disposable Linux dev sandbox for Claude Code" width="820">
@@ -17,7 +18,9 @@
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
   <a href="https://orbstack.dev"><img src="https://img.shields.io/badge/VM-OrbStack-blueviolet" alt="VM: OrbStack"></a>
-  <a href="https://github.com/toolazytoname/atelier/actions/workflows/ci.yml"><img src="https://github.com/toolazytoname/atelier/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/toolazytoname/atelier/actions/workflows/ci.yml">
+    <img src="https://github.com/toolazytoname/atelier/actions/workflows/ci.yml/badge.svg" alt="CI">
+  </a>
   <a href="https://github.com/toolazytoname/atelier/releases"><img src="https://img.shields.io/github/v/release/toolazytoname/atelier" alt="Release"></a>
   <a href="https://github.com/toolazytoname/atelier/discussions"><img src="https://img.shields.io/github/discussions/toolazytoname/atelier" alt="Discussions"></a>
   <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Ubuntu%2024.04-lightgrey" alt="Platform">
@@ -240,12 +243,14 @@ launch CC on the host instead, the following happens on the host:
   protect you from a misbehaving MCP server
 
 **When is host CC OK?**
+
 - You're not running with `--dangerously-skip-permissions`
 - You're doing read-only work (no writes, no MCP, no shell)
 - You're asking a quick question, not driving a multi-step task
 - You understand you've opted out of the "host stays inert" promise
 
 **When is host CC a bad idea?**
+
 - yolo mode: always `bin/devbox claude`
 - Multi-step coding with tool use: `bin/devbox claude`
 - Anything that touches the network: `bin/devbox claude` (the MCP

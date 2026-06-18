@@ -223,7 +223,7 @@ Common forks / extensions:
 | Want to… | Where to look |
 |----------|---------------|
 | Add a new subcommand to `bin/devbox` | `bin/devbox` — add a `cmd_<name>()` and a dispatch case |
-| Add a new tool to the VM | `setup/provision.sh` — add an apt line, or a new `curl | tar` block, or a new `pip install` |
+| Add a new tool to the VM | `setup/provision.sh` — add an apt line, or a new `curl \| tar` block, or a new `pip install` |
 | Change the VM size | `bin/devbox` `VM_*` defaults, or `make setup CPUS=8 MEMORY=16G DISK=128G` |
 | Use a different distro | `bin/devbox` `VM_DISTRO` (default `ubuntu:24.04`) — must be a standard OrbStack image |
 | Replace OrbStack with Lima / Docker | Rewrite `bin/devbox`. The 8 subcommands map to 8 small functions; this is a day of work, not a week |

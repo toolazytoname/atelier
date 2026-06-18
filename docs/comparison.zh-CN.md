@@ -43,6 +43,7 @@
 atelier 一样都用不上）。
 
 **优点：**
+
 - 4-vCPU Ubuntu VM ~4s 启动，闲置 ~250 MB RAM
 - `/Users/lazy` 自动共享为 `/mnt/mac` —— 不用 `sshfs`、不用 `vagrant rsync`
 - `orbctl run` / `orbctl shell` 底层就是 `ssh` —— 没有 daemon、没有 Docker socket 依赖
@@ -50,6 +51,7 @@ atelier 一样都用不上）。
 - Pro 版：快照（我们没包 wrapper；想用的用户直接用 OrbStack UI）
 
 **缺点：**
+
 - 仅 macOS（用 Apple Virtualization framework，macOS only）
 - 闭源 —— OrbStack 如果没了，atelier 就废
 - Pro 功能付费（我们不用；免费版就够了）
@@ -62,10 +64,12 @@ atelier 一样都用不上）。
 或 Apple Hypervisor framework（4.16 起）。给你一个跑着 Docker daemon 的 Linux VM。
 
 **优点：**
+
 - 大部分开发者已经装了
 - Docker 体验出色（Compose、buildx、多架构）
 
 **缺点：**
+
 - 为容器优化，不是裸 Linux VM —— 想拿完整的 systemd / apt / 非容器化的进程树很别扭
 - 没有 `orbctl` 等价的 CLI 用来"在 VM 里跑非 Docker 进程" —— 只有 `docker exec` 一条路
 - 闲置时重（~1.5 GB RAM 的 VM 占用，还没跑任何容器）
@@ -81,11 +85,13 @@ atelier 一样都用不上）。
 （QEMU、Apple Silicon 的 vz、Windows 的 Hyper-V）。
 
 **优点：**
+
 - 开源，CNCF 治理 —— 不会消失
 - 跨平台（macOS、Linux、Windows 通过 WSL2）
 - 标准 `lima.yaml` 配置 —— 容易共享、易复现
 
 **缺点：**
+
 - Apple Silicon 的 `vz` 驱动比 OrbStack 粗糙（启动慢、闲置 RAM 高、偶发挂载卡顿）
 - 文件共享需要显式 `sshfs` 或 `9p` 配置 —— 不是自动的
 - 没有调资源的原生 UI
@@ -101,10 +107,12 @@ atelier 一样都用不上）。
 是什么：Lima 的封装，默认更友好，单个 `colima start` 就能开跑。
 
 **优点：**
+
 - 比裸 Lima 在常见场景下更简单
 - 底层 VM 一样
 
 **缺点：**
+
 - Lima 的所有缺点，加上 colima 自己的固执（更难定制）
 - 没有 SSH UI；是 `colima ssh` 而不是原生 SSH
 
@@ -116,11 +124,13 @@ atelier 一样都用不上）。
 VMware / libvirt / Hyper-V 上跑"。
 
 **优点：**
+
 - 跨平台，大家都知道
 - Vagrantfile 是唯一真相之源
 - provider 覆盖广
 
 **缺点：**
+
 - VirtualBox provider 在 Apple Silicon 上慢（没有原生 Apple Virtualization）
 - 没有自动共享文件系统 —— 要 `vagrant rsync` 或 NFS 插件
 - CLI 表面巨大（`vagrant up`、`vagrant ssh`、`vagrant provision`、
@@ -137,11 +147,13 @@ VMware / libvirt / Hyper-V 上跑"。
 基于 Apple Hypervisor framework。
 
 **优点：**
+
 - Ubuntu 支持一流
 - 一个 CLI：`multipass launch`、`multipass shell`、`multipass exec`
 - `multipass mount` 共享文件
 
 **缺点：**
+
 - 在 Apple Silicon 上不如 OrbStack 精细
 - `multipass mount` 底层是 `sshfs` —— 比 OrbStack 的自动共享慢
 - 社区比 OrbStack 小
