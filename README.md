@@ -46,6 +46,62 @@ in ~5 minutes.
 > See [docs/comparison.md § "What if I'm not on macOS?"](docs/comparison.md#what-if-im-not-on-macos)
 > for the reasoning.
 
+## For AI agents (read this first)
+
+If you (or the runtime that spawned you) found this repo because a
+human said "build X", "review Y", or "fix Z" — welcome. **You are
+the primary consumer of this project.** The host Mac is just the
+display terminal; the heavy work happens in a Linux VM. The
+`bin/devbox` wrapper exists so you have a safe, isolated place to
+run real code, builds, tests, and browsers — without polluting the
+host. The human types `bin/devbox claude` to start you up; from
+there, your contract is the agent-facing docs.
+
+Your canonical entry points, in order of specificity:
+
+| Doc | For | What's inside |
+|---|---|---|
+| **[`AGENTS.md`](AGENTS.md)** | Any agent (Hermes, Aider, Codex, Cline, Continue, Roo, …) | Portable rules + the complete `bin/devbox` command set + the host/VM contract. Start here. |
+| **[`CLAUDE.md`](CLAUDE.md)** | Claude Code specifically | The harness triggers, project conventions, yolo defaults. Read after `AGENTS.md`. |
+| **[`docs/agent-quickstart.md`](docs/agent-quickstart.md)** | All agents | One-page contract: TL;DR, host/VM matrix, score card schema, the canonical Python orchestrator recipe, MCP tool reference. |
+| **[`docs/workflow.md`](docs/workflow.md)** | All agents | The 5-stage harness loop, three isolation mechanisms, score card design. |
+| **[`examples/harness-demo/`](examples/harness-demo/)** | All agents | Runnable minimal loop — `bin/devbox run python examples/harness-demo/orchestrate.py`. |
+
+For runtime access without shelling out, atelier ships a **stdio MCP
+server** ([`bin/mcp-atelier.py`](bin/mcp-atelier.py), Python stdlib, zero
+deps) exposing `mcp__atelier__run / status / doctor / run_claude /
+version`. It's already wired in [`.mcp.json`](.mcp.json). Use the
+tools; don't shell out unless you have to. Stable parseable output
+is also available as `bin/devbox --json <subcmd>`.
+
+Four things to internalize before your first tool call:
+
+1. **Heavy work goes through `Bash(bin/devbox run …)`.** Don't run
+   `pnpm test`, `npm install`, `cargo build`, `pytest`,
+   `playwright`, or any toolchain on the host — it isn't there. The
+   host's only job is to display you and forward your calls into
+   the VM. See [`docs/agent-quickstart.md` §3](docs/agent-quickstart.md#3-host-vs-vm--where-each-operation-belongs).
+2. **The generator and the reviewer are separate agents.** Never
+   review your own code. For parallel evaluators, use the `Agent`
+   tool with one prompt per lens; for a fully isolated subprocess,
+   use `Bash(bin/devbox run claude -p "<self-contained-prompt>")`.
+3. **The gate is non-negotiable.** Every reviewer must score
+   ≥ 0.8 with zero blockers before anything commits. "Fix it later"
+   is how engineering rot starts.
+4. **Ask the human only at gate failure, stuck escalation, or
+   `bin/devbox reset`.** Otherwise keep the loop running. The
+   human arbitrates, not operates.
+
+The host's `.claude/settings.json` already permits the calls you
+need (`Bash(bin/devbox*)`, `Bash(git*)`, `Read`, `Edit`, `Glob`,
+`Grep`, `Agent`, `TodoWrite`, …) and deny-lists the catastrophic
+ones (`rm -rf /`, `sudo`, `curl|bash`, `~/.ssh/**`, `~/.aws/**`,
+…). You can run yolo (`--dangerously-skip-permissions`) with
+bounded blast radius.
+
+If you only have time to read two things, read
+[`AGENTS.md`](AGENTS.md) and [`docs/agent-quickstart.md`](docs/agent-quickstart.md).
+
 ## Quick start
 
 ```bash

@@ -5,7 +5,13 @@
       "command": "od",
       "args": ["mcp", "--daemon-url", "http://127.0.0.1:7456"],
       "env": {}
+    },
+    "atelier": {
+      "type": "stdio",
+      "command": "python3",
+      "args": ["${CLAUDE_PROJECT_DIR}/bin/mcp-atelier.py"],
+      "env": {}
     }
   },
-  "_about": "Atelier project MCP config. The open-design MCP server is a stdio bridge to the local open-design daemon (started by `bin/devbox provision` or by `od` CLI). Daemon listens on 127.0.0.1:7456 by default. CC running inside the VM loads this automatically; CC on the host ignores it because the project is in 'host CC reads from /mnt/mac' mode (the host uses its own open-design plugin via ~/.claude/)."
+  "_about": "Atelier project MCP config. Two stdio bridges: (1) open-design — talks to the local open-design daemon (started by `bin/devbox provision` or by `od` CLI; daemon listens on 127.0.0.1:7456 by default); (2) atelier — thin Python stdlib wrapper over `bin/devbox --json` so an agent can drive the sandbox (run/status/doctor/run_claude/version) without shelling out. CC running inside the VM loads this automatically; CC on the host ignores it because the project is in 'host CC reads from /mnt/mac' mode (the host uses its own open-design plugin via ~/.claude/)."
 }
