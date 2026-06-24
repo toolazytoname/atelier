@@ -26,6 +26,11 @@ VM_MEMORY="${DEVBOX_MEMORY:-8G}"
 VM_DISK="${DEVBOX_DISK:-64G}"
 VM_DISTRO="${DEVBOX_DISTRO:-ubuntu:24.04}"
 
+# Absolute path to the atelier project root (where this script lives's parent).
+# Keeps paths working regardless of where the repo is checked out on the host.
+# /mnt/mac is OrbStack's view of the host filesystem inside the VM.
+DEVBOX_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
+
 # ---------------------------------------------------------------------------
 # helpers
 # ---------------------------------------------------------------------------
@@ -142,10 +147,12 @@ cmd_pull() {
 
 cmd_provision() {
   ensure_vm
-  local script="/mnt/mac/Users/lazy/Code/crack/claude/atelier/setup/provision.sh"
+  local script="/mnt/mac/${DEVBOX_ROOT}/setup/provision.sh"
   [[ -f "$script" ]] || die "provision script not found at $script"
   log "running provision.sh inside $VM_NAME"
-  orbctl run -m "$VM_NAME" bash "$script"
+  # Pass the host project root through as $1 so provision.sh doesn't have to
+  # hardcode any path of its own (it just needs the host view of the repo).
+  orbctl run -m "$VM_NAME" bash "$script" "$DEVBOX_ROOT"
 }
 
 # Run Claude Code entirely inside the VM. The host becomes a thin display
@@ -165,8 +172,10 @@ cmd_claude() {
   # local MCP (.mcp.json) over loopback. Ctrl-C kills the whole group.
   # shellcheck disable=SC2016  # $VAR expansion happens on the VM, not here
   exec orbctl run -m "$VM_NAME" "${extra[@]}" bash -lc '
+    # Keep this in sync with setup/provision.sh:NODE_VERSION (single source of
+    # truth = the provision script). Bumping Node requires editing both.
     export PATH="$HOME/.local/bin:/usr/local/node-v24.11.0-linux-arm64/bin:$PATH"
-    cd "/mnt/mac/Users/lazy/Code/crack/atelier"
+    cd "/mnt/mac/${DEVBOX_ROOT}"
 
     # Start the open-design daemon in the background of THIS shell, so the
     # MCP bridge is alive while CC runs. The MCP itself is stdio (od mcp),

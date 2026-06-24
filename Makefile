@@ -37,7 +37,7 @@ provision: ## run the in-VM provision script (idempotent)
 		echo "creating VM $(VM) ($(CPUS) cpu / $(MEMORY) / $(DISK))"; \
 		orbctl create --cpus $(CPUS) --memory $(MEMORY) --disk $(DISK) $(DISTRO) $(VM); \
 	fi
-	@./bin/devbox run bash /mnt/mac/$$(pwd | sed 's|/Users/|/Users/|')/setup/provision.sh
+	@./bin/devbox run bash /mnt/mac/$(CURDIR)/setup/provision.sh
 
 passthrough: ## mirror host env (ANTHROPIC_*, GITHUB_TOKEN) into the VM
 	@./setup/host-passthrough.sh
