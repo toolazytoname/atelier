@@ -1,12 +1,12 @@
 <!-- markdownlint-disable MD041 first-line-h1 -->
 <p align="center">
   <a href="README.md">
-    <img src="assets/banner.svg" alt="atelier — a disposable Linux dev sandbox for Claude Code" width="820">
+    <img src="assets/banner.svg" alt="atelier — a Linux dev sandbox for Claude Code" width="820">
   </a>
 </p>
 
 <p align="center">
-  <strong>macOS + Claude Code, isolated in a disposable Linux VM. Your host stays clean.</strong>
+  <strong>macOS + Claude Code, isolated in a Linux VM. Your host stays clean.</strong>
 </p>
 
 <p align="center">
@@ -29,12 +29,14 @@
 
 ---
 
-*atelier* (French: **workshop**) is a self-contained, **disposable Linux
-dev sandbox**. Code, builds, tests, and dependencies all live inside an
+*atelier* (French: **workshop**) is a self-contained **Linux dev
+sandbox**. Code, builds, tests, and dependencies all live inside an
 OrbStack Linux VM; the host Mac is reduced to a terminal and OrbStack
 itself. Nothing — no Node, no Python, no Go, no Rust, no MCP
-servers — is installed on your Mac. It all lives in the VM, dies with the
-VM, and rebuilds from scratch in ~5 minutes.
+servers — is installed on your Mac. The VM persists across sessions —
+keep using it as long as it works. If the environment ever gets
+corrupted, `bin/devbox reset` rebuilds from scratch in ~5 minutes, host
+files untouched.
 
 The payoff: run Claude Code with `--dangerously-skip-permissions` and the
 blast radius is the VM, not your laptop.
@@ -65,6 +67,26 @@ bin/devbox reset                       # nuke and recreate (DESTRUCTIVE)
 Run `bin/devbox claude` rather than the host's `claude` so the whole
 process — cache, history, MCP servers — stays in the VM and the host
 stays inert. ([Why? When is host-CC OK?](FAQ.md#should-i-run-claude-code-on-the-host-or-in-the-vm))
+
+### Install the Claude Code skill
+
+```bash
+# from the atelier project root
+ln -s "$(pwd)/plugin" ~/.claude/skills/atelier
+```
+
+Once installed, these phrases automatically route commands to the VM:
+
+- **"run tests"** / **"跑测试"**
+- **"build"** / **"构建"**
+- **"install dependencies"** / **"装依赖"**
+- **"start server"** / **"启动服务"**
+- **"run in sandbox"** / **"在沙箱里跑 XXX"**
+- **"lint"** / **"format"**
+
+You don't need to remember `bin/devbox run` — the skill handles the
+routing. Reading files, editing code, and git operations stay on the host
+as usual.
 
 ### Mirrors
 
@@ -126,7 +148,7 @@ works without them, you just lose that feature.
 |---|---|---|
 | 1 | **Less human involvement** | Closed-loop harness: a generator writes code in isolation, N independent reviewers grade it in parallel, a quality gate decides pass/iterate. Human arbitrates only when stuck. *(via `everything-claude-code` skills; see [`docs/workflow.md`](docs/workflow.md))* |
 | 2 | **Catch what self-test misses** | The `verify` skill, `e2e-runner`, the multi-agent `council`, Playwright screenshots. |
-| 3 | **Isolated VM** | **Bundled.** OrbStack Ubuntu 24.04 VM, every tool inside, `bin/devbox reset` rebuilds in ~5 min, host untouched. |
+| 3 | **Isolated VM** | **Bundled.** OrbStack Ubuntu 24.04 VM, every tool inside, `bin/devbox reset` rebuilds in ~5 min if needed, host untouched. |
 
 ## File layout
 
@@ -141,6 +163,9 @@ works without them, you just lose that feature.
 ├── assets/                        # logo / banner / social-card SVGs
 ├── .claude/settings.json          # sandbox allow list + yolo backstop deny
 ├── .mcp.json                      # atelier sandbox MCP bridge config
+├── plugin/                        # Claude Code skill (ln -s to ~/.claude/skills/atelier)
+│   ├── .claude-plugin/plugin.json
+│   └── skills/atelier/SKILL.md
 ├── bin/
 │   ├── devbox                     # host wrapper: run / shell / claude / reset / doctor
 │   └── mcp-atelier.py             # stdio MCP server wrapping bin/devbox --json
@@ -174,8 +199,8 @@ Full threat model, the three layers, and what it deliberately does
 
 OrbStack gives a *real* Linux VM (full init, kernel isolation, disk
 image) plus a native macOS Docker daemon, faster and lighter than Docker
-Desktop on Apple Silicon, with disposable VMs that `bin/devbox reset`
-rebuilds in seconds. The head-to-head vs Docker Desktop / Lima / colima /
+Desktop on Apple Silicon, with VMs that `bin/devbox reset`
+rebuilds in seconds when needed. The head-to-head vs Docker Desktop / Lima / colima /
 Vagrant / Multipass / Apple's `container` is in
 [`docs/comparison.md`](docs/comparison.md).
 

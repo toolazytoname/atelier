@@ -1,0 +1,8 @@
+{
+  "name": "atelier",
+  "description": "Route builds, tests, and dev commands into an isolated OrbStack Linux VM. Your Mac stays clean; the blast radius stays bounded.",
+  "author": {
+    "name": "toolazytoname",
+    "url": "https://github.com/toolazytoname/atelier"
+  }
+}
