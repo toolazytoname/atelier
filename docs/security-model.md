@@ -231,7 +231,7 @@ malicious package can exfiltrate `ANTHROPIC_AUTH_TOKEN` to
 `evil.example.com` over HTTPS, where the deny list can't see
 it. Mitigations:
 
-- **Tokens are stored only in `/etc/environment.d/host-proxy.conf`
+- **Tokens are stored only in `~/.config/environment.d/host-proxy.conf`
   inside the VM, never on disk on the host**
 - **Tokens are not echoed in any log path** — `provision.sh`
   uses `set -x` selectively, never with env-var expansion in

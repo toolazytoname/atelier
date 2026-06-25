@@ -189,7 +189,7 @@ list. The deny list is for the "unrecoverable mistake" class, not
 |------|-------|------------------------------|
 | Project source code | `/Users/you/Code/crack/<project>` (host) ↔ `/mnt/mac/...` (VM) | ✅ |
 | Project `.env`, `.git/`, `node_modules/`, `.venv/`, `target/` | same as above | ✅ |
-| Anthropic token | `/etc/environment.d/host-proxy.conf` (VM), set by `setup/host-passthrough.sh` | ❌ (re-run passthrough) |
+| Anthropic token | `~/.config/environment.d/host-proxy.conf` (VM), set by `setup/host-passthrough.sh` | ❌ (re-run passthrough) |
 | Claude Code session history | `~/.claude/session-data/` (VM) | ❌ |
 | open-design design project | `~/.local/share/open-design/` (VM) | ❌ (re-import spec) |
 | Open-design daemon PID / logs | `~/.local/share/open-design/daemon.log` (VM) | ❌ |

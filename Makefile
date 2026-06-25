@@ -8,9 +8,6 @@ DISK      ?= 64G
 DISTRO    ?= ubuntu:24.04
 CN_MIRROR ?= 1
 
-# Pass-through env to setup scripts. CN_MIRROR=0 forces international mirrors.
-SETUP_ENV = CN_MIRROR=$(CN_MIRROR) VM=$(VM) CPUS=$(CPUS) MEMORY=$(MEMORY) DISK=$(DISK) DISTRO=$(DISTRO)
-
 help: ## show this help
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n\nTargets:\n"} \
 		/^[a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-22s\033[0m %s\n", $$1, $$2 }' $(MAKEFILE_LIST)

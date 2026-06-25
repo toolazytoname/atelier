@@ -30,10 +30,13 @@ fi
 # Fallback: download the latest .dmg straight from orbstack.dev. The site
 # detects the host arch and serves the right build.
 log "Homebrew not found; downloading OrbStack.dmg from orbstack.dev"
+# Pinned .dmg version for the no-Homebrew fallback. Overridable via env;
+# bump it when the URL 404s (Homebrew is the primary, always-current path).
+dmg_version="${ORBSTACK_DMG_VERSION:-2.2.1}"
 arch="$(uname -m)"
 case "$arch" in
-  arm64) asset="OrbStack_2.2.1_arm64.dmg" ;;
-  x86_64) asset="OrbStack_2.2.1_x64.dmg" ;;
+  arm64) asset="OrbStack_${dmg_version}_arm64.dmg" ;;
+  x86_64) asset="OrbStack_${dmg_version}_x64.dmg" ;;
   *) die "unsupported arch: $arch" ;;
 esac
 url="https://orbstack.dev/download/${asset}"
@@ -47,7 +50,7 @@ log "mounting dmg"
 hdiutil attach -nobrowse -quiet "$tmp/$asset" || die "failed to mount $asset"
 
 # The .dmg exposes OrbStack.app; copy it to /Applications.
-mount_point="$(/usr/bin/env | grep -E '^TMPDIR|^HOME' | head -1 >/dev/null; find /Volumes -maxdepth 1 -name 'OrbStack*' -type d 2>/dev/null | head -1)"
+mount_point="$(find /Volumes -maxdepth 1 -name 'OrbStack*' -type d 2>/dev/null | head -1)"
 [[ -d "$mount_point/OrbStack.app" ]] || die "could not find OrbStack.app inside the dmg"
 
 log "copying OrbStack.app to /Applications (may prompt for admin password)"

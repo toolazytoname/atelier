@@ -147,7 +147,7 @@ def tool_run_claude(args: dict[str, Any]) -> dict[str, Any]:
     """Spawn a fresh `claude -p "<prompt>"` subprocess inside the VM.
 
     Required: prompt (str).
-    Optional: model (str), max_iter (int, advisory, default 1).
+    Optional: model (str), timeout (int, seconds, default 3600).
 
     Returns the raw envelope (stdout / stderr / exit_code). The caller
     is expected to interpret the output (e.g. parse a score-card JSON
@@ -412,7 +412,7 @@ def main() -> int:
             '    "mcpServers": {\n'
             '      "atelier": {\n'
             '        "type": "stdio",\n'
-            f'        "command": "python3",\n'
+            '        "command": "python3",\n'
             f'        "args": ["{DEVBOX.with_name("mcp-atelier.py")}"]\n'
             "      }\n"
             "    }\n"

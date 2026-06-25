@@ -152,10 +152,15 @@ cmd_provision() {
   local host_script="$DEVBOX_ROOT/setup/provision.sh"
   local vm_script="/mnt/mac/${DEVBOX_ROOT}/setup/provision.sh"
   [[ -f "$host_script" ]] || die "provision script not found at $host_script"
-  log "running provision.sh inside $VM_NAME"
+  # Forward CN_MIRROR so `bin/devbox provision` / `reset` honor the host's
+  # mirror choice (defaults to 1, matching provision.sh). orbctl run does not
+  # inherit arbitrary host env, so pass it explicitly — otherwise reset would
+  # always use CN mirrors regardless of CN_MIRROR=0.
+  local cn_mirror="${CN_MIRROR:-1}"
+  log "running provision.sh inside $VM_NAME (CN_MIRROR=$cn_mirror)"
   # Pass the host project root through as $1 so provision.sh doesn't have to
   # hardcode any path of its own (it just needs the host view of the repo).
-  orbctl run -m "$VM_NAME" bash "$vm_script" "$DEVBOX_ROOT"
+  orbctl run -m "$VM_NAME" env "CN_MIRROR=$cn_mirror" bash "$vm_script" "$DEVBOX_ROOT"
 }
 
 # Run Claude Code entirely inside the VM. The host becomes a thin display
@@ -179,9 +184,14 @@ cmd_claude() {
   # local MCP (.mcp.json) over loopback. Ctrl-C kills the whole group.
   # shellcheck disable=SC2016  # $VAR expansion happens on the VM, not here
   exec orbctl run -m "$VM_NAME" "${extra[@]}" bash -lc '
-    # Keep this in sync with setup/provision.sh:NODE_VERSION (single source of
-    # truth = the provision script). Bumping Node requires editing both.
-    export PATH="$HOME/.local/bin:/usr/local/node-v24.11.0-linux-arm64/bin:$PATH"
+    # provision.sh symlinks node into /usr/local/bin and unpacks the tarball
+    # to /usr/local/node-<ver>-linux-<arch>/. Add that dir via a glob so we
+    # never hardcode the version or arch (arm64 vs x64) — the previous
+    # hardcoded arm64 path broke Claude Code on Intel VMs.
+    export PATH="$HOME/.local/bin:$PATH"
+    for _nodedir in /usr/local/node-*/bin; do
+      [ -d "$_nodedir" ] && export PATH="$_nodedir:$PATH"
+    done
     cd "/mnt/mac/${DEVBOX_ROOT}"
 
     # Start the open-design daemon in the background of THIS shell, so the

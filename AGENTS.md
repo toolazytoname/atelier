@@ -82,7 +82,7 @@ This means:
 project tree is lost.** The only persistent state is:
 
 - The project tree (host + VM via the auto-share)
-- `/etc/environment.d/host-proxy.conf` inside the VM (the
+- `~/.config/environment.d/host-proxy.conf` inside the VM (the
   passthrough'd tokens; re-run `./setup/host-passthrough.sh`
   to repopulate)
 - OrbStack's VM image (the `.orbstack` directory on the host,
@@ -95,7 +95,7 @@ Everything else (`~/.cargo`, `~/go/pkg`, `node_modules/`,
 
 `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN`, `GITHUB_TOKEN`
 are forwarded from the host into
-`/etc/environment.d/host-proxy.conf` by
+`~/.config/environment.d/host-proxy.conf` by
 `./setup/host-passthrough.sh`. The agent (you) should not log
 them, print them, write them to disk on the host, or include
 them in any URL. If a log line accidentally contains a token,

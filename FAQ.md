@@ -122,7 +122,7 @@ propagate. Pick any port you like inside the VM.
 ### How do I get my Anthropic / GitHub token into the VM?
 
 `./setup/host-passthrough.sh` reads `ANTHROPIC_*` and `GITHUB_TOKEN`
-from your host shell and writes them to `/etc/environment.d/host-proxy.conf`
+from your host shell and writes them to `~/.config/environment.d/host-proxy.conf`
 inside the VM. Re-run it any time you rotate a token. The
 `bin/devbox claude` launcher re-reads these on every invocation.
 
