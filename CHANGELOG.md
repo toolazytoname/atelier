@@ -7,9 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
+### Removed
 
-- (placeholder for next release)
+- open-design integration: the `bin/devbox gui` command, the
+  `localhost:7456` browser tunnel, the open-design daemon / `od` binary /
+  Electron dependencies in `setup/provision.sh`, and the open-design
+  server block in `.mcp.json`. atelier is now positioned purely as an
+  isolated dev sandbox.
+
+### Changed
+
+- `.mcp.json` now ships a single `atelier` MCP server — a Python-stdlib
+  bridge wrapping `bin/devbox --json` so agents can drive the sandbox
+  (`run` / `status` / `doctor` / `run_claude` / `version`).
 
 ## [1.0.0] — 2026-06-16
 

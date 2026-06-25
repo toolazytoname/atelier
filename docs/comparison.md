@@ -31,12 +31,10 @@ Before we compare, here's the spec atelier depends on:
 4. **One CLI to drive it** — `orbctl run` / `orbctl shell` /
    `orbctl create` / `orbctl delete`. We wrap this in
    `bin/devbox`
-5. **SSH access to the VM** — for the GUI tunnel
-   (`ssh -L 7456:127.0.0.1:7456 ...`)
-6. **Idempotent provisioning** — we re-run `setup/provision.sh`
+5. **Idempotent provisioning** — we re-run `setup/provision.sh`
    on every `bin/devbox reset` and expect it to converge
 
-OrbStack is the only tool on macOS that gives us all six.
+OrbStack is the only tool on macOS that gives us all five.
 
 ## Tool-by-tool
 
@@ -251,9 +249,6 @@ networking, Apple Silicon only. No Intel.
   the image again — but if your image is the standard Ubuntu one
   with no tools, you've lost Node/Python/Go/etc. unless they were
   baked into the image at build time.
-- atelier needs SSH into the VM (`ssh -L 7456:127.0.0.1:7456 ...`
-  to tunnel the open-design web UI). apple/container has no SSH
-  story; you'd expose the daemon another way.
 - The "auto-share `/Users/you/...` → `/mnt/mac/...`" UX is
   a core atelier feature. apple/container requires explicit
   per-container mount configuration.

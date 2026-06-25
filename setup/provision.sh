@@ -80,7 +80,7 @@ sudo locale-gen en_US.UTF-8 >/dev/null
 ok "locale"
 
 # ---------------------------------------------------------------------------
-# Node.js 24 LTS via npmmirror binary tarball (open-design requires ~24)
+# Node.js 24 LTS via npmmirror binary tarball
 # ---------------------------------------------------------------------------
 step "Node.js 24 LTS"
 # Single source of truth for the Node install path. `extracted_dir` matches
@@ -251,61 +251,6 @@ if ! command -v claude >/dev/null 2>&1; then
   mkdir -p "$HOME/.local/bin"
 fi
 ok "claude $(claude --version 2>/dev/null || echo installed)"
-
-# ---------------------------------------------------------------------------
-# open-design (daemon + MCP server, Electron GUI). All-in-VM design workflow.
-# Local-first, agent-native, runs on Linux because it's Node 24 + Electron.
-# Source: https://github.com/nexu-io/open-design
-# ---------------------------------------------------------------------------
-step "open-design (daemon + MCP)"
-
-OD_DIR="$HOME/.local/share/open-design"
-OD_BIN="$HOME/.local/bin/od"
-OD_REPO="https://github.com/nexu-io/open-design.git"
-OD_REF="main"
-
-if [[ ! -d "$OD_DIR/.git" ]]; then
-  echo "   cloning open-design ($OD_REF) to $OD_DIR"
-  git clone --depth 1 --branch "$OD_REF" "$OD_REPO" "$OD_DIR" || {
-    echo "   clone failed; trying shallow without branch"
-    git clone --depth 1 "$OD_REPO" "$OD_DIR"
-  }
-fi
-
-# Install + build only if the install hasn't been done yet, or if a marker is missing.
-if [[ ! -f "$OD_DIR/node_modules/.modules.yaml" ]] || [[ ! -x "$OD_DIR/apps/daemon/bin/od.mjs" ]]; then
-  echo "   pnpm install in $OD_DIR (this can take a few minutes)"
-  # corepack needs root to symlink into /usr/local/bin; we already have pnpm
-  # installed globally by the earlier step, so just use it directly.
-  (cd "$OD_DIR" && pnpm install --no-frozen-lockfile 2>&1 | tail -10)
-fi
-
-# Expose the `od` binary on PATH
-mkdir -p "$HOME/.local/bin"
-if [[ -f "$OD_DIR/apps/daemon/bin/od.mjs" ]]; then
-  cat > "$OD_BIN" <<EOF
-#!/usr/bin/env bash
-exec node "$OD_DIR/apps/daemon/bin/od.mjs" "\$@"
-EOF
-  chmod +x "$OD_BIN"
-fi
-
-# A few native deps Electron needs at runtime in the VM (X11 forwarding)
-if command -v apt-get >/dev/null 2>&1; then
-  sudo apt-get install -y --no-install-recommends \
-    libgtk-3-0 libnss3 libxss1 libasound2t64 libatk-bridge2.0-0 libdrm2 \
-    libgbm1 libxcomposite1 libxdamage1 libxfixes3 libxkbcommon0 libxrandr2 \
-    xauth xvfb 2>&1 | tail -3 || true
-fi
-
-# Try to start the daemon so MCP can talk to it; non-fatal if it doesn't.
-if [[ -x "$OD_BIN" ]] && ! pgrep -f "od.mjs" >/dev/null 2>&1; then
-  echo "   starting open-design daemon in background"
-  (nohup "$OD_BIN" start >"$HOME/.local/share/open-design/daemon.log" 2>&1 &) || true
-  sleep 2
-fi
-
-ok "od $(command -v od >/dev/null 2>&1 && echo installed || echo 'CLI missing')"
 
 # ---------------------------------------------------------------------------
 # Starship prompt + zsh default

@@ -10,7 +10,6 @@
 #   devbox shell                 # open an interactive shell
 #   devbox run <cmd>             # run a command (shorthand for orb run)
 #   devbox claude                # run Claude Code entirely inside the VM
-#   devbox gui                   # open open-design Electron GUI from VM
 #   devbox push <file>           # copy file/folder into VM home
 #   devbox pull <file>           # copy from VM home to cwd
 #   devbox provision             # re-run setup/provision.sh inside VM
@@ -179,9 +178,6 @@ cmd_claude() {
   done
 
   log "launching claude inside $VM_NAME (host is now just a display terminal)"
-  # Daemon + CC share one orb run so they live and die together. The daemon
-  # is a background process inside the same VM shell; CC talks to it via the
-  # local MCP (.mcp.json) over loopback. Ctrl-C kills the whole group.
   # shellcheck disable=SC2016  # $VAR expansion happens on the VM, not here
   exec orbctl run -m "$VM_NAME" "${extra[@]}" bash -lc '
     # provision.sh symlinks node into /usr/local/bin and unpacks the tarball
@@ -194,65 +190,8 @@ cmd_claude() {
     done
     cd "/mnt/mac/${DEVBOX_ROOT}"
 
-    # Start the open-design daemon in the background of THIS shell, so the
-    # MCP bridge is alive while CC runs. The MCP itself is stdio (od mcp),
-    # not HTTP, so no token / port binding is needed.
-    if ! pgrep -f "od.mjs" >/dev/null 2>&1; then
-      echo "[devbox] starting open-design daemon"
-      nohup ~/.local/bin/od start >~/.local/share/open-design/daemon.log 2>&1 &
-      disown
-      # Give it a moment to bind 127.0.0.1:7456 before CC connects.
-      for i in 1 2 3 4 5; do
-        pgrep -f "od.mjs" >/dev/null 2>&1 && break
-        sleep 1
-      done
-    fi
-    od status 2>&1 | sed "s/^/  /"
-
     exec claude "$@"
   ' _ "$@"
-}
-
-# Forward the open-design web UI from the VM to the host browser via an
-# SSH tunnel through OrbStack. The daemon lives in a background `orb run`
-# so it survives the SSH session handshake; killing the foreground ssh
-# process tears the tunnel down and the daemon exits with the orb run.
-cmd_gui() {
-  ensure_vm
-  local port="${DEVBOX_GUI_PORT:-7456}"
-  log "tunneling VM's :$port → host's :$port (Ctrl-C to stop)"
-  log "then open: http://localhost:$port"
-
-  # Start the daemon in its own long-lived `orb run` (it stays alive for
-  # the duration of the tunnel). Bind only to loopback — the SSH tunnel
-  # is what bridges traffic to the host.
-  # shellcheck disable=SC2016  # $VAR expansion happens on the VM, not here
-  orbctl run -m "$VM_NAME" bash -lc '
-    export PATH="$HOME/.local/bin:$PATH"
-    if ! pgrep -f "od.mjs" >/dev/null 2>&1; then
-      echo "[devbox] starting open-design daemon"
-      nohup ~/.local/bin/od start >~/.local/share/open-design/daemon.log 2>&1 &
-      disown
-      for i in 1 2 3 4 5; do
-        pgrep -f "od.mjs" >/dev/null 2>&1 && break
-        sleep 1
-      done
-    fi
-    od status 2>&1 | sed "s/^/  /"
-    echo "[devbox] daemon ready on 127.0.0.1:'"$port"'. Ctrl-C the bin/devbox gui process to stop the tunnel."
-    exec sleep infinity
-  ' &
-  local daemon_pid=$!
-
-  # Tidy up on Ctrl-C. Single quotes so $daemon_pid is evaluated when the
-  # trap fires (not now at trap-set time).
-  trap 'kill "$daemon_pid" 2>/dev/null; wait "$daemon_pid" 2>/dev/null' EXIT INT TERM
-
-  # OrbStack exposes Linux VMs as `user@machine@orb` over SSH.
-  ssh -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/dev/null \
-      -N -L "${port}:127.0.0.1:${port}" "${USER}@${VM_NAME}@orb"
-  kill $daemon_pid 2>/dev/null
-  wait $daemon_pid 2>/dev/null
 }
 
 cmd_reset() {
@@ -499,7 +438,6 @@ case "${1:-help}" in
   pull)      shift; cmd_pull "$@" ;;
   provision) shift; cmd_provision "$@" ;;
   claude)    shift; cmd_claude "$@" ;;
-  gui)       shift; cmd_gui "$@" ;;
   reset)     shift; cmd_reset "$@" ;;
   doctor)    shift; if [[ $JSON -eq 1 ]]; then cmd_doctor_json "$@"; else cmd_doctor "$@"; fi ;;
   help|--help|-h|*)

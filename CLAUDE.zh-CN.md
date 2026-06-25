@@ -71,15 +71,14 @@ VM 里。宿主 Mac 只跑 Claude Code 本身。
 
 ## 东西在哪
 
-**全部在 VM 里跑。** 宿主只是个瘦客户端：终端、浏览器、OrbStack。
+**全部在 VM 里跑。** 宿主只是个瘦客户端：终端、OrbStack。
 
-- **宿主（Mac）**：终端显示、浏览器标签指向 `http://localhost:7456`
-  （经 SSH 隧道访问的 open-design web UI）。仅此而已。没有 Node、没有
+- **宿主（Mac）**：终端显示、OrbStack。仅此而已。没有 Node、没有
   MCP、没有 dev 工具——全在 VM 里。
 - **VM（atelier）**：
   - Claude Code（用 `bin/devbox claude` 跑）
-  - open-design daemon（HTTP 在 `127.0.0.1:7456`，MCP 用 `od mcp`）
-  - open-design MCP 桥（stdio；通过项目下 `.mcp.json` 配置）
+  - atelier 沙箱 MCP 桥（stdio；通过项目下 `.mcp.json` 配置——包装
+    `bin/devbox --json`，让 agent 驱动沙箱）
   - 全部 dev 工具：Node 24 / pnpm / Python 3.12 / Go 1.23 / Rust 1.96 /
     uv / gh / starship
   - 网络型 MCP：`playwright`、`context7`、`exa`、`github`、
@@ -98,7 +97,6 @@ brew install --cask orbstack                            # if missing
 
 # every session
 bin/devbox claude                                       # Claude Code, inside the VM (run with --dangerously-skip-permissions for yolo)
-bin/devbox gui                                          # open-design web UI tunneled to host browser
 bin/devbox shell                                        # or just an interactive shell
 bin/devbox run pnpm test                                # run any command inside the VM
 bin/devbox doctor                                       # health check
@@ -110,18 +108,17 @@ bin/devbox reset                                        # nuke + recreate (DESTR
 1. **重活在 VM 里跑**，别动宿主。用 `bin/devbox run <cmd>` 或
    `orb run atelier -- <cmd>`。宿主文件系统以读写方式挂到 VM 的
    `/mnt/mac`——两边都能编辑，但沙箱化的执行路径始终在 VM 里。
-2. **设计审美从 Open Design 来。** 任何 UI 开工前先用
-   `mcp__open-design__get_artifact` 拉取活动项目，把返回结果当 spec。
-   再用 `mcp__plugin_lazyweb_lazyweb__lazyweb_search` 交叉对照真实产品
-   参考。把活丢进 `everything-claude-code:frontend-design` 和
-   `ui-ux-pro-max` skills。
+2. **设计审美从真实参考来。** 任何 UI 开工前先用
+   `mcp__plugin_lazyweb_lazyweb__lazyweb_search` 交叉对照真实产品
+   参考，把它当 spec。把活丢进 `everything-claude-code:frontend-design`
+   和 `ui-ux-pro-max` skills。
 3. **多视角验证是硬性要求。** 写完代码不要相信那条看着对的路。每次都：
    - 用 `verify` skill 真起浏览器、真交互。
    - `everything-claude-code:e2e-runner` 走关键用户路径。
    - 拉 `everything-claude-code:council`，N 个独立 agent 拿不同 lens
      （正确性 / 视觉 / a11y / 边界 / 安全）。
    - 关键页面用 `mcp__plugin_everything-claude-code_playwright__browser_take_screenshot`
-     截图，跟 Open Design 参考肉眼比对。
+     截图，跟你的设计参考肉眼比对。
 4. **积极上 harness。** 非琐碎功能用
    `everything-claude-code:autonomous-agent-harness` /
    `autonomous-loops` / `continuous-agent-loop` 编，让多 agent 议会在
@@ -134,8 +131,8 @@ bin/devbox reset                                        # nuke + recreate (DESTR
 
 ## 宿主 vs VM 跑什么
 
-简版：宿主跑终端、浏览器、OrbStack 和 `git`/文件读取；**其它一切都跑在
-VM 里**（Claude Code、open-design daemon + MCP、所有语言工具链、所有网络
+简版：宿主跑终端、OrbStack 和 `git`/文件读取；**其它一切都跑在
+VM 里**（Claude Code、atelier 沙箱 MCP、所有语言工具链、所有网络
 型 MCP）。完整的逐组件表格在
 [`docs/architecture.md`](docs/architecture.md)。
 

@@ -10,7 +10,6 @@
 │  Layer 1: Display                                                    │
 │  ───────────────                                                     │
 │  macOS Terminal (you type here)                                      │
-│  macOS Browser (http://localhost:7456 → open-design web UI)          │
 │  Nothing else runs on the host.                                      │
 └──────────────────────────────────────────────────────────────────────┘
                                 │
@@ -23,7 +22,6 @@
 │    • run     → orbctl run -m atelier -- <cmd>                        │
 │    • shell   → orbctl shell atelier                                  │
 │    • claude  → orbctl run ... bash -lc '...' (wraps CC inside VM)    │
-│    • gui     → SSH -L 7456:127.0.0.1:7456 atelier@orb                │
 │    • reset   → orbctl delete + create + provision                    │
 │    • doctor  → orbctl info + check mounts + env passthrough          │
 │                                                                      │
@@ -39,7 +37,6 @@
 │  Provisioned once by setup/provision.sh (~5 min, idempotent)         │
 │                                                                      │
 │  • Claude Code  (run via bin/devbox claude, yolo-friendly)           │
-│  • open-design daemon (HTTP 127.0.0.1:7456, stdio MCP)               │
 │  • Node 24 / pnpm / Python 3.12 / uv / Go 1.23 / Rust 1.96 / gh     │
 │  • starship / zsh / fzf / ripgrep / fd / bat / lazygit               │
 │  • Network MCPs: lazyweb, context7, exa, github,                     │
@@ -84,7 +81,7 @@ stdout/stderr piped back to host terminal via orbctl
 $  (you see the output, exit code propagated)
 ```
 
-### Claude Code in the VM, MCP in the VM, browser on the host
+### Claude Code in the VM, MCP in the VM
 
 ```
 $ bin/devbox claude
@@ -93,31 +90,18 @@ $ bin/devbox claude
 ensure_vm → start atelier
         │
         ↓
-od start &   (daemon binds 127.0.0.1:7456 in VM)
-        │
-        ↓
-claude   (5) — discovers .mcp.json in cwd → loads open-design MCP
+claude   (5) — discovers .mcp.json in cwd → loads the atelier MCP
         │       the MCP is a stdio bridge, so no port forwarding needed
         │       for the agent ↔ MCP link
         ↓
-User types: "show me the design system tokens"
+Agent calls a sandbox tool: mcp__atelier__run({"cmd": "pnpm test"})
         │
         ↓
-CC → mcp__open-design__get_artifact → daemon → response → CC
-        │
-        ↓
-User wants to see the visual UI:
-$ bin/devbox gui   (separate terminal)
-        │
-        ↓
-SSH -L 7456:127.0.0.1:7456 atelier@orb   (6) — tunnel browser → daemon
-        │
-        ↓
-Browser tab at http://localhost:7456 → reaches daemon's 127.0.0.1:7456
+CC → mcp__atelier__run → bin/devbox --json → VM exec → response → CC
 ```
 
-The 6 step numbers above correspond to comments in
-[`bin/devbox`](../bin/devbox) `cmd_claude()` and `cmd_gui()` if you
+The step numbers above (continuing from the previous flow) correspond to
+comments in [`bin/devbox`](../bin/devbox) `cmd_claude()` if you
 want to trace the code.
 
 ## Why each piece exists
@@ -191,8 +175,6 @@ list. The deny list is for the "unrecoverable mistake" class, not
 | Project `.env`, `.git/`, `node_modules/`, `.venv/`, `target/` | same as above | ✅ |
 | Anthropic token | `~/.config/environment.d/host-proxy.conf` (VM), set by `setup/host-passthrough.sh` | ❌ (re-run passthrough) |
 | Claude Code session history | `~/.claude/session-data/` (VM) | ❌ |
-| open-design design project | `~/.local/share/open-design/` (VM) | ❌ (re-import spec) |
-| Open-design daemon PID / logs | `~/.local/share/open-design/daemon.log` (VM) | ❌ |
 | Global npm packages | `~/.npm-global/` (VM) | ❌ |
 | Rust crates cache | `~/.cargo/` (VM) | ❌ |
 | Go module cache | `~/go/pkg/` (VM) | ❌ |
@@ -226,7 +208,7 @@ Common forks / extensions:
 | Add a new tool to the VM | `setup/provision.sh` — add an apt line, or a new `curl \| tar` block, or a new `pip install` |
 | Change the VM size | `bin/devbox` `VM_*` defaults, or `make setup CPUS=8 MEMORY=16G DISK=128G` |
 | Use a different distro | `bin/devbox` `VM_DISTRO` (default `ubuntu:24.04`) — must be a standard OrbStack image |
-| Replace OrbStack with Lima / Docker | Rewrite `bin/devbox`. The 8 subcommands map to 8 small functions; this is a day of work, not a week |
+| Replace OrbStack with Lima / Docker | Rewrite `bin/devbox`. The subcommands each map to a small function; this is a day of work, not a week |
 | Add a new MCP server | `.mcp.json` — point at the binary, restart CC |
 
 For the "multi-agent harness" workflow that sits on top of this

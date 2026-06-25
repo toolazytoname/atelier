@@ -262,8 +262,6 @@ For larger work (architecture change, new module), add:
 For UI work, also add:
 
 - `lazyweb-design-research` — pull real product references
-- `open-design` — the design system spec must be loaded before the
-  generator runs
 
 ## When NOT to use the harness
 

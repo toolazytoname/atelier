@@ -55,7 +55,7 @@ Project files:  host    /Users/you/Code/crack/<project>
 | `curl ... \| bash` | ❌ | ❌ (deny-listed) |
 
 If the toolchain **only exists in the VM** (Node, pnpm, uv,
-cargo, go, gh, the open-design daemon, MCP servers) — your
+cargo, go, gh, MCP servers) — your
 command is meaningless on the host. Route it.
 
 ### Rule 2: project files live on the host, accessible from the VM
@@ -108,7 +108,6 @@ them in any URL. If a log line accidentally contains a token,
 | `bin/devbox run <cmd...>` | run a single command in the VM |
 | `bin/devbox shell` | open an interactive shell inside the VM |
 | `bin/devbox claude [args]` | run Claude Code entirely inside the VM |
-| `bin/devbox gui` | start the open-design web UI, tunneled to host browser on `http://localhost:7456` |
 | `bin/devbox push <file> [dest]` | copy a file/folder from host into the VM's `~` |
 | `bin/devbox pull <file> [dest]` | copy from VM `~` to the host |
 | `bin/devbox status` | show VM state |
@@ -226,7 +225,6 @@ Ask only when:
 | Symptom | Cause | Fix |
 |---------|-------|-----|
 | `command not found` on host | toolchain in VM, not host | `bin/devbox run <cmd>` |
-| `connection refused 127.0.0.1:7456` | open-design daemon not running | `bin/devbox gui` (auto-starts it) |
 | `VM atelier is not running` | VM stopped | `bin/devbox run ...` (auto-starts) or `orb start atelier` |
 | `permission denied: ~/.ssh` | deny list hit | correct behaviour — don't bypass |
 | token not seen in VM | passthrough not run / token rotated | `./setup/host-passthrough.sh` |

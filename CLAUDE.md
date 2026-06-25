@@ -96,15 +96,14 @@ guards, parallel reviewer patterns), see
 ## Where things live
 
 **Everything runs inside the VM.** The host is a thin client: a
-terminal, a browser, and OrbStack.
+terminal and OrbStack.
 
-- **Host (Mac)**: terminal display, browser tab pointing at
-  `http://localhost:7456` (the open-design web UI via SSH tunnel).
-  Nothing else. No Node, no MCPs, no dev tools — those are all in the VM.
+- **Host (Mac)**: terminal display and OrbStack. Nothing else. No Node,
+  no MCPs, no dev tools — those are all in the VM.
 - **VM (atelier)**:
   - Claude Code (run via `bin/devbox claude`)
-  - open-design daemon (HTTP at `127.0.0.1:7456`, MCP at `od mcp`)
-  - open-design MCP bridge (stdio; configured via `.mcp.json` in the project)
+  - atelier sandbox MCP bridge (stdio; configured via `.mcp.json` in the
+    project — wraps `bin/devbox --json` so agents can drive the sandbox)
   - All dev tools: Node 24 / pnpm / Python 3.12 / Go 1.23 / Rust 1.96 /
     uv / gh / starship
   - Network MCPs: `playwright`, `context7`, `exa`, `github`,
@@ -123,7 +122,6 @@ brew install --cask orbstack                            # if missing
 
 # every session
 bin/devbox claude                                       # Claude Code, inside the VM (run with --dangerously-skip-permissions for yolo)
-bin/devbox gui                                          # open-design web UI tunneled to host browser
 bin/devbox shell                                        # or just an interactive shell
 bin/devbox run pnpm test                                # run any command inside the VM
 bin/devbox doctor                                       # health check
@@ -136,11 +134,10 @@ bin/devbox reset                                        # nuke + recreate (DESTR
    or `orb run atelier -- <cmd>`. The host filesystem is mounted
    read-write at `/mnt/mac` inside the VM — edit either side, but the
    sandboxed execution path stays inside the VM.
-2. **Design aesthetic comes from Open Design.** Before designing any UI,
-   pull the active project via
-   `mcp__open-design__get_artifact` and treat the result as the spec.
-   Cross-reference with `mcp__plugin_lazyweb_lazyweb__lazyweb_search` for
-   real product references. Run the work through the
+2. **Design aesthetic comes from real references.** Before designing any
+   UI, pull real product references via
+   `mcp__plugin_lazyweb_lazyweb__lazyweb_search` and treat them as the
+   spec. Run the work through the
    `everything-claude-code:frontend-design` and `ui-ux-pro-max` skills.
 3. **Multi-perspective verification is mandatory.** After writing code,
    don't trust the obvious path. Always:
@@ -149,7 +146,7 @@ bin/devbox reset                                        # nuke + recreate (DESTR
    - Spin up `everything-claude-code:council` with N independent agents
      using different lenses (correctness / visual / a11y / boundary / security).
    - Screenshot key views via `mcp__plugin_everything-claude-code_playwright__browser_take_screenshot`
-     and visually compare to Open Design references.
+     and visually compare to your design references.
 4. **Harness aggressively.** For non-trivial features, orchestrate with
    `everything-claude-code:autonomous-agent-harness` /
    `autonomous-loops` / `continuous-agent-loop` and let the multi-agent
@@ -165,9 +162,9 @@ bin/devbox reset                                        # nuke + recreate (DESTR
 
 ## What runs on the host vs. the VM
 
-Short version: the host runs the terminal, the browser, OrbStack, and
+Short version: the host runs the terminal, OrbStack, and
 `git`/file reads; **everything else runs in the VM** (Claude Code,
-open-design daemon + MCP, all language toolchains, all network MCPs).
+the atelier sandbox MCP, all language toolchains, all network MCPs).
 The full per-component table is in
 [`docs/architecture.md`](docs/architecture.md).
 

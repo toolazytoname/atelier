@@ -52,8 +52,7 @@ You can iterate on any file under `setup/`, `bin/`, or `docs/`, then
 `provision.sh` has a single env var, `CN_MIRROR`, that switches between
 mainland-China mirrors and international sources. Default is `1` (CN). If
 you change a default URL, update both branches — and test the international
-branch with `CN_MIRROR=0 ./setup/provision.sh` before sending a PR. CI
-covers both branches (`.github/workflows/test-mirrors.yml`).
+branch with `CN_MIRROR=0 ./setup/provision.sh` before sending a PR.
 
 ## Project layout conventions
 
@@ -64,7 +63,7 @@ docs/        design rationale, longer-form notes (EN + .zh-CN.md mirror)
 assets/      logo.svg / banner.svg / social-card.svg
 examples/    minimal runnable demos (currently: harness-demo)
 .claude/     project-level settings.json (allow + deny list)
-.mcp.json    open-design MCP bridge config (consumed by CC inside the VM)
+.mcp.json    atelier sandbox MCP bridge config (consumed by CC inside the VM)
 .github/     workflows/, ISSUE_TEMPLATE/, PULL_REQUEST_TEMPLATE.md
 TASKS.md     persistent task checklist (survives /clear)
 README.md    English, top-level
@@ -138,7 +137,7 @@ make doctor                        # 确认全绿
 
 `provision.sh` 只有一个环境变量 `CN_MIRROR`，在国内/国际镜像间切换。默认是 `1`（国内）。
 如果你改了默认 URL，两个分支都要改——并且发 PR 之前用 `CN_MIRROR=0 ./setup/provision.sh`
-测过国际分支。CI 已经覆盖两个分支（见 `.github/workflows/test-mirrors.yml`）。
+测过国际分支。
 
 ## 目录约定
 
@@ -149,7 +148,7 @@ docs/        设计理由、长篇说明（EN + .zh-CN.md 镜像）
 assets/      logo.svg / banner.svg / social-card.svg
 examples/    最小可运行 demo（目前：harness-demo）
 .claude/     项目级 settings.json（白名单 + deny 名单）
-.mcp.json    open-design MCP 桥（VM 里的 CC 消费）
+.mcp.json    atelier 沙箱 MCP 桥（VM 里的 CC 消费）
 .github/     workflows/、ISSUE_TEMPLATE/、PULL_REQUEST_TEMPLATE.md
 TASKS.md     持久化任务清单（跨 /clear 还在）
 README.md    英文，总览

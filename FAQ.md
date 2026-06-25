@@ -31,7 +31,7 @@ sibling project — atelier has no plans to support it.
 ### How long does `make setup` take?
 
 About **5 minutes** the first time on a fast link, mostly downloading
-Ubuntu packages, Node 24, Go, Rust, and open-design. On the CN mirror
+Ubuntu packages, Node 24, Go, and Rust. On the CN mirror
 defaults (TUNA, npmmirror, goproxy.cn, rsproxy.cn, ghfast.top) this
 drops to 2–3 minutes inside mainland China. Re-runs are idempotent
 and finish in seconds.
@@ -68,19 +68,6 @@ the cost of breaking the isolation model.
   no exceptions
 - Quick read-only question while you're not in a session: host CC
   is fine, just don't run a real task from it
-
-### What's the relationship between atelier and open-design?
-
-**open-design is a separate project.** Atelier happens to bundle an
-MCP bridge to it (`.mcp.json`), and `bin/devbox claude` / `bin/devbox gui`
-will start the open-design daemon if it isn't running. But you can
-use atelier without open-design — just delete `.mcp.json` (or leave
-it; missing commands degrade gracefully).
-
-The README's "four-pillar" table mentions open-design, lazyweb,
-everything-claude-code:frontend-design, etc. These are **recommended
-companion tools**, not parts of atelier. If you don't have them,
-atelier still works — you just lose the design-aware features.
 
 ### Where is my project code?
 
@@ -126,12 +113,6 @@ from your host shell and writes them to `~/.config/environment.d/host-proxy.conf
 inside the VM. Re-run it any time you rotate a token. The
 `bin/devbox claude` launcher re-reads these on every invocation.
 
-### The browser tab shows "connection refused" on <http://localhost:7456>
-
-`bin/devbox gui` is not running, or it died. Open a new terminal and
-run `bin/devbox gui`. Ctrl-C in that terminal tears down both the
-daemon and the SSH tunnel.
-
 ## Reset & recovery
 
 ### What's the difference between `make reset` and `bin/devbox reset`?
@@ -148,7 +129,6 @@ in ~5 minutes. Things you will lose:
 - Packages installed to the VM (rebuilt from `provision.sh`)
 - Files in `~/.bashrc` / `~/.zshrc` inside the VM
 - Files in `~/.cargo`, `~/go`, `node_modules` inside the VM
-- Anything in `~/.local/share/open-design/` inside the VM
 
 **Mitigation:** anything persistent must live in the project tree
 or in `setup/provision.sh`. See CONTRIBUTING.md.
@@ -172,7 +152,6 @@ Quick symptom → fix. Several of these are expanded in the Q&A above.
 | VM boots but tools are missing | provision didn't finish — `bin/devbox provision` (idempotent) |
 | `claude` in the VM not authenticated | `./setup/host-passthrough.sh`, then start a fresh `bin/devbox claude` |
 | token not seen in the VM | passthrough not run or token rotated — re-run `./setup/host-passthrough.sh` |
-| `connection refused` on `localhost:7456` | `bin/devbox gui` isn't running — start it (it auto-starts the open-design daemon) |
 | `command not found` for `pnpm`/`pytest`/… | you ran it on the host — route it: `bin/devbox run <cmd>` |
 | provision hangs on a download | CN mirror rate-limit — switch with `CN_MIRROR=0 ./setup/provision.sh` |
 | port already taken on the host | the VM has its own network namespace; host conflicts don't propagate |

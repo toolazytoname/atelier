@@ -119,7 +119,7 @@ What's **not** in the allow list:
 - Generic `Bash(*)` — every shell command not matched by the
   patterns above prompts the user
 - `mcp__*` tools from MCP servers not in `.mcp.json` — only
-  the open-design MCP is whitelisted
+  the atelier sandbox MCP is whitelisted
 - `curl`, `wget`, `ssh`, `nc`, `nmap`, ... — all prompt
 
 This means: in yolo mode, the agent can read anything and run

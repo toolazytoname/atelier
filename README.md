@@ -31,8 +31,8 @@
 
 *atelier* (French: **workshop**) is a self-contained, **disposable Linux
 dev sandbox**. Code, builds, tests, and dependencies all live inside an
-OrbStack Linux VM; the host Mac is reduced to a terminal, a browser tab,
-and OrbStack itself. Nothing — no Node, no Python, no Go, no Rust, no MCP
+OrbStack Linux VM; the host Mac is reduced to a terminal and OrbStack
+itself. Nothing — no Node, no Python, no Go, no Rust, no MCP
 servers — is installed on your Mac. It all lives in the VM, dies with the
 VM, and rebuilds from scratch in ~5 minutes.
 
@@ -56,7 +56,6 @@ make setup                             # = install-orbstack + provision + passth
 
 # 3. daily use — Claude Code lives IN the VM
 bin/devbox claude                      # Claude Code inside the VM (add --dangerously-skip-permissions for yolo)
-bin/devbox gui                         # open-design web UI on host browser (localhost:7456)
 bin/devbox run pnpm test               # any command inside the VM
 bin/devbox shell                       # interactive VM shell
 bin/devbox doctor                      # health check
@@ -102,14 +101,11 @@ runs with a bounded blast radius.
 ```
 Host (Mac) — thin client
 ├── Terminal (you type here)
-├── Browser tab → http://localhost:7456 (the open-design UI)
 └── OrbStack (the hypervisor)
                 │  orb run atelier -- <cmd>    ← stdio forwarded
-                │  ssh atelier@orb -L 7456:... ← browser tunnel
                 ↓
 VM (atelier) — everything else
 ├── Claude Code (via `bin/devbox claude`)
-├── open-design daemon + MCP + web UI (127.0.0.1:7456)
 ├── Node 24 / pnpm / Python 3.12 / Go / Rust / uv / gh / starship
 └── network MCPs (lazyweb, context7, exa, playwright, github, sequential-thinking)
 ```
@@ -120,23 +116,17 @@ Your project tree lives on the host at
 VM borrows it for execution. Full wiring, data flow, and the host/VM
 split are in [`docs/architecture.md`](docs/architecture.md).
 
-> open-design is a **separate, optional project**. atelier ships a
-> bridge config (`.mcp.json`) and starts the daemon for you, but works
-> without it — you just lose the design-aware features. See
-> [FAQ](FAQ.md#whats-the-relationship-between-atelier-and-open-design).
+## The three pillars
 
-## The four pillars
-
-atelier delivers four requirements. Only pillar 4 (the sandbox) ships in
-this repo; pillars 1–3 are **recommended companion tools** — atelier
+atelier delivers three requirements. Only pillar 3 (the sandbox) ships in
+this repo; pillars 1–2 are **recommended companion tools** — atelier
 works without them, you just lose that feature.
 
 | # | Requirement | How |
 |---|---|---|
 | 1 | **Less human involvement** | Closed-loop harness: a generator writes code in isolation, N independent reviewers grade it in parallel, a quality gate decides pass/iterate. Human arbitrates only when stuck. *(via `everything-claude-code` skills; see [`docs/workflow.md`](docs/workflow.md))* |
-| 2 | **Design aligned with Open Design** | `mcp__open-design__*` as the spec, `lazyweb_search` for references, the `frontend-design` / `ui-ux-pro-max` skills. |
-| 3 | **Catch what self-test misses** | The `verify` skill, `e2e-runner`, the multi-agent `council`, Playwright screenshots. |
-| 4 | **Isolated VM** | **Bundled.** OrbStack Ubuntu 24.04 VM, every tool inside, `bin/devbox reset` rebuilds in ~5 min, host untouched. |
+| 2 | **Catch what self-test misses** | The `verify` skill, `e2e-runner`, the multi-agent `council`, Playwright screenshots. |
+| 3 | **Isolated VM** | **Bundled.** OrbStack Ubuntu 24.04 VM, every tool inside, `bin/devbox reset` rebuilds in ~5 min, host untouched. |
 
 ## File layout
 
@@ -150,12 +140,12 @@ works without them, you just lose that feature.
 ├── Makefile                       # make setup / doctor / reset / shell
 ├── assets/                        # logo / banner / social-card SVGs
 ├── .claude/settings.json          # sandbox allow list + yolo backstop deny
-├── .mcp.json                      # open-design + atelier MCP bridge config
+├── .mcp.json                      # atelier sandbox MCP bridge config
 ├── bin/
-│   ├── devbox                     # host wrapper: run / shell / claude / gui / reset / doctor
+│   ├── devbox                     # host wrapper: run / shell / claude / reset / doctor
 │   └── mcp-atelier.py             # stdio MCP server wrapping bin/devbox --json
 ├── docs/
-│   ├── design.md                  # why this project exists (four pillars)
+│   ├── design.md                  # why this project exists (three pillars)
 │   ├── architecture.md            # components, data flow, host/VM split
 │   ├── comparison.md              # vs Docker Desktop / Lima / Vagrant / Multipass
 │   ├── security-model.md          # yolo-safety model: walls, threats, limits
@@ -192,8 +182,8 @@ Vagrant / Multipass / Apple's `container` is in
 ## Troubleshooting
 
 Common symptoms and fixes live in [FAQ.md](FAQ.md#troubleshooting)
-(e.g. `orb: command not found`, VM not running, `connection refused` on
-`localhost:7456`, token not seen in the VM). The quickest recovery from a
+(e.g. `orb: command not found`, VM not running, token not seen in the
+VM). The quickest recovery from a
 suspect VM is always `bin/devbox reset` — it's a VM, the blast radius is
 bounded, and the host filesystem is untouched.
 

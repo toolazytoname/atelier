@@ -23,7 +23,7 @@ This project doesn't try to solve all of agent engineering. It solves the
 "how do I let Claude Code do real work without me babysitting it, in a way
 that's safe, looks good, and runs in the network I'm actually on" question.
 
-## The four pillars
+## The three pillars
 
 Each pillar maps to a concrete tool or pattern that already exists in the
 Claude Code environment. The sandbox just makes them composable.
@@ -51,32 +51,7 @@ all of that out of the user's loop.
 `everything-claude-code:plan` — and use it for every non-trivial task. The
 habit is more important than the tool.
 
-### 2. Design aesthetic aligned with Open Design
-
-**Mechanism:** `mcp__open-design__get_artifact` pulls the user's live
-design project as the spec. `mcp__plugin_lazyweb_lazyweb__lazyweb_search`
-adds real product references. `everything-claude-code:frontend-design` /
-`ui-ux-pro-max` / `design-system` are the implementation skills.
-
-**What it looks like in practice:** Before any UI work, the agent runs
-`mcp__open-design__get_artifact` and reads the returned design tokens,
-component library, and reference screens. It then writes CSS/JSX that
-matches. If it needs a reference for a screen type it hasn't seen (e.g.
-"a pricing page with annual/monthly toggle"), it asks
-`mcp__plugin_lazyweb_lazyweb__lazyweb_search` for the best three real
-products in that space and uses their patterns as input.
-
-**Why this is a pillar, not just a feature:** A model's design taste out of
-the box is, charitably, "fine". It converges to whatever the most common
-Stack Overflow Bootstrap snippet looks like. The user's bar is much higher
-than that, and a spec from Open Design is the only way to meet it.
-
-**What to do if you don't have Open Design:** Pick any source of design
-truth — Figma, a Tailwind config your team uses, screenshots of a
-reference app. The principle is: the agent should never invent the visual
-language; it should read one.
-
-### 3. Multi-perspective verification
+### 2. Multi-perspective verification
 
 **Mechanism:** `verify` skill (real browser, real interactions);
 `everything-claude-code:e2e-runner` (Playwright walks critical paths);
@@ -93,7 +68,7 @@ must pass three gates before reporting "done":
    journeys, asserts nothing regressed.
 3. **Lens review:** `council` spawns three agents — one checks correctness
    (does the code do what it claims?), one checks visual (does it match the
-   Open Design spec?), one checks a11y (does it work for keyboard and
+   design references?), one checks a11y (does it work for keyboard and
    screen reader users?). Majority vote to accept.
 
 **Why this is a pillar, not just a feature:** A single agent's self-test
@@ -107,7 +82,7 @@ imagining a different user, who is reading the design spec, not the code.
 reviewer agent helps. The key is: review must come from something
 *different* from the code-writing agent, on a *different* concern.
 
-### 4. Isolated VM
+### 3. Isolated VM
 
 **Mechanism:** OrbStack Linux VM (`atelier`) with host filesystem
 mounted at `/mnt/mac`. `bin/devbox` wrapper keeps every command sandboxed.
@@ -129,21 +104,21 @@ disposable VM is the cheapest way to give that trust a physical bound.
 (Multipass, Vagrant, Lima, UTM, even a Docker-in-Docker setup with
 caveats). The point is: the blast radius is bounded, and reset is cheap.
 
-## Why these four, not others
+## Why these three, not others
 
 - **Why not "faster model"?** Cost: marginal. Effect: marginal. The
   bottleneck is not token throughput.
 - **Why not "better memory"?** Memory helps within a session, but most
   cross-session context is project structure, not the agent's opinions.
-  Pinning the design spec and a verification loop does more.
+  Pinning the task and a verification loop does more.
 - **Why not "more context"?** A longer context window is wasted if the
-  context is full of irrelevant past attempts. The four pillars
-  *constrain* what goes into context: design spec, current task,
+  context is full of irrelevant past attempts. The three pillars
+  *constrain* what goes into context: current task,
   verification result, environment state.
 - **Why not "fine-tuned for code"?** Same reason as model choice.
   Bottleneck isn't the model.
 
-The four pillars address the four real costs: **time spent operating,
+The three pillars address the real costs: **time spent operating,
 quality of output, cost of catching bugs late, and trust.**
 
 ## Mirror selection
@@ -166,9 +141,9 @@ gain. The rule of thumb: **only mirror the thing that actually hurts.**
 `atelier` is French for *workshop*, and the Chinese mirror is *工坊* (gōngfāng).
 The name captures the whole idea in two languages: a place where you make
 things carefully, by hand or with tools, and where the workspace is set up
-deliberately rather than improvised. The four pillars — autonomous harness,
-design spec, multi-perspective verification, isolated VM — are the workbench,
-the blueprint, the QC bench, and the blast-door of the workshop.
+deliberately rather than improvised. The three pillars — autonomous harness,
+multi-perspective verification, isolated VM — are the workbench,
+the QC bench, and the blast-door of the workshop.
 
 We considered and rejected:
 
