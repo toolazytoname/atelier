@@ -71,9 +71,18 @@ stays inert. ([Why? When is host-CC OK?](FAQ.md#should-i-run-claude-code-on-the-
 ### Install the Claude Code skill
 
 ```bash
-# from the atelier project root
-ln -s "$(pwd)/plugin" ~/.claude/skills/atelier
+curl -fsSL https://raw.githubusercontent.com/toolazytoname/atelier/main/install.sh | bash
 ```
+
+Or, if you prefer to review the script first:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/toolazytoname/atelier/main/install.sh | cat   # audit
+curl -fsSL https://raw.githubusercontent.com/toolazytoname/atelier/main/install.sh | bash  # install
+```
+
+The script is [open source](install.sh) — pure bash, only touches
+`~/.claude/skills/` and `~/.claude/skill-packages/`, idempotent on re-run.
 
 Once installed, these phrases automatically route commands to the VM:
 
@@ -163,7 +172,7 @@ works without them, you just lose that feature.
 ├── assets/                        # logo / banner / social-card SVGs
 ├── .claude/settings.json          # sandbox allow list + yolo backstop deny
 ├── .mcp.json                      # atelier sandbox MCP bridge config
-├── plugin/                        # Claude Code skill (ln -s to ~/.claude/skills/atelier)
+├── plugin/                        # Claude Code skill (install via install.sh)
 │   ├── .claude-plugin/plugin.json
 │   └── skills/atelier/SKILL.md
 ├── bin/

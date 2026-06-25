@@ -79,7 +79,7 @@ jobs:
         run: |
           set -euo pipefail
           out="$(bin/devbox help)"
-          for kw in status shell run push pull provision claude gui reset doctor; do
+          for kw in status shell run push pull provision claude reset doctor; do
             echo "$out" | grep -q "$kw" || { echo "missing subcommand in help: $kw"; exit 1; }
           done
 

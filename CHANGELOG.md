@@ -29,12 +29,12 @@ First public release.
 
 - OrbStack Ubuntu 24.04 VM called `atelier` (default: 4 CPU / 8G RAM / 64G disk)
 - `bin/devbox` driver with subcommands:
-  `run`, `shell`, `claude`, `gui`, `push`, `pull`, `status`,
+  `run`, `shell`, `claude`, `push`, `pull`, `status`,
   `doctor`, `provision`, `reset`
 - `setup/` scripts: `install-orbstack.sh`, `provision.sh`,
   `host-passthrough.sh`, `uninstall.sh`
 - open-design MCP bridge (`.mcp.json`; daemon auto-started by
-  `bin/devbox claude` / `bin/devbox gui`)
+  `bin/devbox claude`)
 - `Makefile` with `help`, `setup`, `install-orbstack`, `provision`,
   `passthrough`, `doctor`, `shell`, `run`, `reset`, `uninstall`, `clean`,
   `lint`, `test` targets
