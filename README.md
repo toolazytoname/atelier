@@ -30,77 +30,19 @@
 ---
 
 *atelier* (French: **workshop**) is a self-contained, **disposable Linux
-dev sandbox** for building whatever you want. The whole workflow — code,
-builds, tests, dependencies — lives inside an OrbStack Linux VM. The
-host Mac is reduced to its true minimum: a terminal, a browser tab, and
-OrbStack itself. No Node, no Python, no Go, no Rust, no MCP servers — all
-of it lives in the VM, dies with the VM, and can be rebuilt from scratch
-in ~5 minutes.
+dev sandbox**. Code, builds, tests, and dependencies all live inside an
+OrbStack Linux VM; the host Mac is reduced to a terminal, a browser tab,
+and OrbStack itself. Nothing — no Node, no Python, no Go, no Rust, no MCP
+servers — is installed on your Mac. It all lives in the VM, dies with the
+VM, and rebuilds from scratch in ~5 minutes.
 
-> **Prerequisites (read this first):** atelier runs **on macOS only**
-> (13+, Apple Silicon recommended; Intel works). You need
-> [OrbStack](https://orbstack.dev) — that's the only host dependency.
-> Nothing else gets installed on your Mac. **Linux and Windows are
-> not supported** (the "host stays inert" architecture only makes
-> sense when the host is something separate from the dev environment).
-> See [docs/comparison.md § "What if I'm not on macOS?"](docs/comparison.md#what-if-im-not-on-macos)
-> for the reasoning.
+The payoff: run Claude Code with `--dangerously-skip-permissions` and the
+blast radius is the VM, not your laptop.
 
-## For AI agents (read this first)
-
-If you (or the runtime that spawned you) found this repo because a
-human said "build X", "review Y", or "fix Z" — welcome. **You are
-the primary consumer of this project.** The host Mac is just the
-display terminal; the heavy work happens in a Linux VM. The
-`bin/devbox` wrapper exists so you have a safe, isolated place to
-run real code, builds, tests, and browsers — without polluting the
-host. The human types `bin/devbox claude` to start you up; from
-there, your contract is the agent-facing docs.
-
-Your canonical entry points, in order of specificity:
-
-| Doc | For | What's inside |
-|---|---|---|
-| **[`AGENTS.md`](AGENTS.md)** | Any agent (Hermes, Aider, Codex, Cline, Continue, Roo, …) | Portable rules + the complete `bin/devbox` command set + the host/VM contract. Start here. |
-| **[`CLAUDE.md`](CLAUDE.md)** | Claude Code specifically | The harness triggers, project conventions, yolo defaults. Read after `AGENTS.md`. |
-| **[`docs/agent-quickstart.md`](docs/agent-quickstart.md)** | All agents | One-page contract: TL;DR, host/VM matrix, score card schema, the canonical Python orchestrator recipe, MCP tool reference. |
-| **[`docs/workflow.md`](docs/workflow.md)** | All agents | The 5-stage harness loop, three isolation mechanisms, score card design. |
-| **[`examples/harness-demo/`](examples/harness-demo/)** | All agents | Runnable minimal loop — `bin/devbox run python examples/harness-demo/orchestrate.py`. |
-
-For runtime access without shelling out, atelier ships a **stdio MCP
-server** ([`bin/mcp-atelier.py`](bin/mcp-atelier.py), Python stdlib, zero
-deps) exposing `mcp__atelier__run / status / doctor / run_claude /
-version`. It's already wired in [`.mcp.json`](.mcp.json). Use the
-tools; don't shell out unless you have to. Stable parseable output
-is also available as `bin/devbox --json <subcmd>`.
-
-Four things to internalize before your first tool call:
-
-1. **Heavy work goes through `Bash(bin/devbox run …)`.** Don't run
-   `pnpm test`, `npm install`, `cargo build`, `pytest`,
-   `playwright`, or any toolchain on the host — it isn't there. The
-   host's only job is to display you and forward your calls into
-   the VM. See [`docs/agent-quickstart.md` §3](docs/agent-quickstart.md#3-host-vs-vm--where-each-operation-belongs).
-2. **The generator and the reviewer are separate agents.** Never
-   review your own code. For parallel evaluators, use the `Agent`
-   tool with one prompt per lens; for a fully isolated subprocess,
-   use `Bash(bin/devbox run claude -p "<self-contained-prompt>")`.
-3. **The gate is non-negotiable.** Every reviewer must score
-   ≥ 0.8 with zero blockers before anything commits. "Fix it later"
-   is how engineering rot starts.
-4. **Ask the human only at gate failure, stuck escalation, or
-   `bin/devbox reset`.** Otherwise keep the loop running. The
-   human arbitrates, not operates.
-
-The host's `.claude/settings.json` already permits the calls you
-need (`Bash(bin/devbox*)`, `Bash(git*)`, `Read`, `Edit`, `Glob`,
-`Grep`, `Agent`, `TodoWrite`, …) and deny-lists the catastrophic
-ones (`rm -rf /`, `sudo`, `curl|bash`, `~/.ssh/**`, `~/.aws/**`,
-…). You can run yolo (`--dangerously-skip-permissions`) with
-bounded blast radius.
-
-If you only have time to read two things, read
-[`AGENTS.md`](AGENTS.md) and [`docs/agent-quickstart.md`](docs/agent-quickstart.md).
+> **Prerequisites:** macOS only (13+, Apple Silicon recommended; Intel
+> works) with [OrbStack](https://orbstack.dev) installed — the only host
+> dependency. Linux/Windows are not supported; see
+> [docs/comparison.md § "What if I'm not on macOS?"](docs/comparison.md#what-if-im-not-on-macos).
 
 ## Quick start
 
@@ -109,296 +51,159 @@ If you only have time to read two things, read
 brew install --cask orbstack
 open /Applications/OrbStack.app        # complete first-run setup
 
-# 2. bring up the VM and provision it (~5 min, idempotent)
-make setup                            # = install-orbstack + provision + passthrough + doctor
-# or step by step:
-./setup/provision.sh
-./setup/host-passthrough.sh           # forward host env (ANTHROPIC_*, ...)
+# 2. bring up + provision the VM (~5 min, idempotent)
+make setup                             # = install-orbstack + provision + passthrough + doctor
 
 # 3. daily use — Claude Code lives IN the VM
-bin/devbox claude                     # ← recommended: Claude Code inside the VM
-bin/devbox gui                        # open-design web UI on host browser
-bin/devbox run pnpm test              # any command inside the VM
-bin/devbox shell                      # interactive VM shell
-bin/devbox doctor                     # health check
-bin/devbox reset                      # nuke and recreate
+bin/devbox claude                      # Claude Code inside the VM (add --dangerously-skip-permissions for yolo)
+bin/devbox gui                         # open-design web UI on host browser (localhost:7456)
+bin/devbox run pnpm test               # any command inside the VM
+bin/devbox shell                       # interactive VM shell
+bin/devbox doctor                      # health check
+bin/devbox reset                       # nuke and recreate (DESTRUCTIVE)
 ```
 
-**Why `bin/devbox claude` and not the host's `claude`?** Because the
-whole point of atelier is that the host Mac stays inert. CC running
-on the host will write `~/.claude/{cache,file-history,session-data}`
-on the host and run any MCP servers on the host. `bin/devbox claude`
-moves the whole process into the VM. The trade-off is ~30–80 ms of
-TUI latency over `orbctl` — invisible for coding, mildly annoying
-for interactive browser feedback. See
-["Should I run Claude Code on the host?"](#should-i-run-claude-code-on-the-host)
-below.
+Run `bin/devbox claude` rather than the host's `claude` so the whole
+process — cache, history, MCP servers — stays in the VM and the host
+stays inert. ([Why? When is host-CC OK?](FAQ.md#should-i-run-claude-code-on-the-host-or-in-the-vm))
 
 ### Mirrors
 
-`provision.sh` defaults to **mainland-China mirrors** because the
-international Cloudflare-fronted CDNs (`deb.nodesource.com`,
-`download.docker.com`, etc.) rate-limit aggressively when traffic comes
-from CN egress. The script uses TUNA (apt), npmmirror (Node/npm/binary
-mirror), goproxy.cn (Go module proxy), rsproxy.cn (crates.io), and
-ghfast.top (GitHub releases). Set `CN_MIRROR=0 ./setup/provision.sh` to
-use international sources instead.
+`provision.sh` defaults to **mainland-China mirrors** (TUNA, npmmirror,
+goproxy.cn, rsproxy.cn, ghfast.top) because international CDNs rate-limit
+CN egress hard. Set `CN_MIRROR=0 ./setup/provision.sh` for international
+sources.
 
-## Highlights
+## For AI agents
 
-- **Yolo with a bounded blast radius.** Run Claude Code with
-  `--dangerously-skip-permissions`; the architecture is the wall, the
-  allow/deny list is just the backstop.
-- **Host stays inert.** No dev tools installed, no shell rc modified,
-  no config files touched. `bin/devbox reset` rebuilds the VM in
-  ~5 min.
-- **CN-friendly out of the box.** `provision.sh` defaults to
-  mainland-China mirrors so installs don't crawl on CN egress. Set
-  `CN_MIRROR=0` to switch to international sources.
-- **One wrapper, every command.** `bin/devbox run` / `shell` / `claude` /
-  `gui` / `doctor` / `reset` — your whole toolchain lives behind one
-  driver.
-- **Harness loop by default.** Non-trivial features go through a
-  5-stage closed loop — generator → N parallel reviewers → quality
-  gate → commit (or iterate). The sandbox makes it safe to run
-  unattended; humans only arbitrate when the loop is stuck. See
-  [docs/workflow.md](docs/workflow.md) for the full design and
-  [examples/harness-demo/](examples/harness-demo/) for a runnable
-  demo.
+**You are the primary consumer of this project.** The host Mac is just
+the display; the heavy work happens in the VM, and `bin/devbox` is your
+safe place to run real code, builds, tests, and browsers. Your entry
+points, in order:
 
-## The all-in-VM architecture
+| Doc | For |
+|---|---|
+| **[`AGENTS.md`](AGENTS.md)** | Any agent. Portable rules, the full `bin/devbox` + MCP command set, the host/VM contract. **Start here.** |
+| **[`CLAUDE.md`](CLAUDE.md)** | Claude Code specifically — harness triggers, project conventions, yolo defaults. |
+| **[`docs/workflow.md`](docs/workflow.md)** | The harness loop in full: 5 stages, isolation, score-card schema, orchestrator recipe. |
+| **[`examples/harness-demo/`](examples/harness-demo/)** | Runnable minimal loop. |
+
+The four things to internalize: **(1)** heavy work goes through
+`bin/devbox run …` — the host has no toolchain; **(2)** generator and
+reviewer are always separate agents, never review your own code;
+**(3)** the gate is non-negotiable (every reviewer ≥ 0.8, zero
+blockers); **(4)** ask the human only at gate failure, stuck
+escalation, or `bin/devbox reset`. The host's `.claude/settings.json`
+already permits what you need and deny-lists the catastrophic, so yolo
+runs with a bounded blast radius.
+
+## Architecture
 
 ```
 Host (Mac) — thin client
 ├── Terminal (you type here)
-├── Browser tab pointing at http://localhost:7456 (the open-design UI)
+├── Browser tab → http://localhost:7456 (the open-design UI)
 └── OrbStack (the hypervisor)
-                │
-                │ orb run atelier -- <cmd>      ← stdio forwarded
-                │ ssh atelier@orb -L 7456:...  ← browser tab tunnel
+                │  orb run atelier -- <cmd>    ← stdio forwarded
+                │  ssh atelier@orb -L 7456:... ← browser tunnel
                 ↓
 VM (atelier) — everything else
-├── Claude Code (run via `bin/devbox claude`)
-├── open-design daemon (HTTP at 127.0.0.1:7456, MCP at `od mcp`)
-├── open-design MCP (stdio; talks to local daemon; CC discovers via .mcp.json)
-├── open-design web UI (served by daemon, viewed in host browser via SSH tunnel)
+├── Claude Code (via `bin/devbox claude`)
+├── open-design daemon + MCP + web UI (127.0.0.1:7456)
 ├── Node 24 / pnpm / Python 3.12 / Go / Rust / uv / gh / starship
 └── network MCPs (lazyweb, context7, exa, playwright, github, sequential-thinking)
 ```
 
-The whole thing shares the host's `/Users/you/Code/crack/atelier/`
-through OrbStack's mount at `/mnt/mac/...` — your files live where
-you'd expect (on the host), and the VM just borrows them for execution.
+Your project tree lives on the host at
+`/Users/you/Code/crack/atelier/` and is auto-shared into the VM at
+`/mnt/mac/...` — same bytes, same git state, edit either side. Only the
+VM borrows it for execution. Full wiring, data flow, and the host/VM
+split are in [`docs/architecture.md`](docs/architecture.md).
 
-## What lives where
+> open-design is a **separate, optional project**. atelier ships a
+> bridge config (`.mcp.json`) and starts the daemon for you, but works
+> without it — you just lose the design-aware features. See
+> [FAQ](FAQ.md#whats-the-relationship-between-atelier-and-open-design).
 
-| Concern                       | Host | VM | Why                                                                              |
-|-------------------------------|------|----|----------------------------------------------------------------------------------|
-| Terminal, browser, display    |  ✓   |    | the OS already does this for you                                                |
-| OrbStack hypervisor           |  ✓   |    | runs the Linux VM on Apple Silicon                                               |
-| Claude Code¹                  |      |  ✓ | **recommended**: `bin/devbox claude`. CC-on-host works but breaks the "host stays inert" promise |
-| open-design daemon¹           |      |  ✓ | Node service; binds 127.0.0.1 only; accessed via SSH tunnel                      |
-| open-design MCP¹              |      |  ✓ | stdio bridge from CC to the daemon                                              |
-| open-design web UI¹           |      |  ✓ | served at 127.0.0.1:7456 inside VM; user sees it at localhost:7456 on host      |
-| Node 24 / pnpm / Python / Go / Rust / uv / gh / starship |  | ✓ | isolated per-project; `bin/devbox reset` removes them in one shot    |
-| project files                 |  ✓   |    | `/Users/you/Code/crack/atelier/` on host, mounted as `/mnt/mac/...` in VM       |
+## The four pillars
 
-¹ *open-design is a separate project. Atelier ships a bridge config
-(`.mcp.json`) and will start the daemon for you, but open-design
-itself is optional. Without it, atelier still works — you just lose
-the design-aware features. See
-[FAQ § "What's the relationship between atelier and open-design?"](FAQ.md).*
+atelier delivers four requirements. Only pillar 4 (the sandbox) ships in
+this repo; pillars 1–3 are **recommended companion tools** — atelier
+works without them, you just lose that feature.
 
-## The four-pillar methodology
-
-This project delivers the user's four stated requirements. Each pillar
-maps to a concrete tool / skill / pattern; the VM is the foundation
-that makes the loop fast and safe.
-
-> The skills and MCPs named in pillars 1–3 are **recommended companions**,
-> not parts of the atelier repo. Atelier works without them; you
-> just lose the corresponding feature. The one thing atelier *does*
-> ship is pillar 4 (the sandbox itself).
-
-| # | Requirement                                  | How it is delivered (bundled vs recommended)                                                                                                                                                                                  |
-|---|----------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1 | Less human involvement                       | **Recommended.** The default workflow for any non-trivial feature is a closed-loop harness: a generator writes code in isolation, N independent reviewers (correctness / security / a11y / visual / boundary) grade it in parallel, and a quality gate decides pass or iterate. The human only arbitrates when the loop gets stuck. Powered by the `everything-claude-code` plugin family — `autonomous-agent-harness`, `continuous-agent-loop`, `council`, `quality-gate`. Atelier ships no orchestration itself; it provides the sandbox that makes running this loop unattended safe. |
-| 2 | Design aesthetic aligned with Open Design    | **Recommended:** the `mcp__open-design__*` tools (served by the local daemon), the `mcp__plugin_lazyweb_lazyweb__lazyweb_search` reference library, and the `everything-claude-code:frontend-design` / `ui-ux-pro-max` / `design-system` skills. None of these are required. |
-| 3 | Catch what self-test misses                  | **Recommended:** the `verify` skill, `everything-claude-code:e2e-runner`, the multi-agent `council`, and `mcp__plugin_everything-claude-code_playwright__browser_take_screenshot`. All opt-in.                                            |
-| 4 | Isolated VM, no impact on the host           | **Bundled.** OrbStack Ubuntu 24.04 VM (`atelier`) · every dev tool lives inside · `bin/devbox reset` rebuilds the VM from scratch in ~5 min · the host stays inert: no packages, no shell rc edits, no config files touched. **Run `bin/devbox claude` to keep this promise — see below.** |
+| # | Requirement | How |
+|---|---|---|
+| 1 | **Less human involvement** | Closed-loop harness: a generator writes code in isolation, N independent reviewers grade it in parallel, a quality gate decides pass/iterate. Human arbitrates only when stuck. *(via `everything-claude-code` skills; see [`docs/workflow.md`](docs/workflow.md))* |
+| 2 | **Design aligned with Open Design** | `mcp__open-design__*` as the spec, `lazyweb_search` for references, the `frontend-design` / `ui-ux-pro-max` skills. |
+| 3 | **Catch what self-test misses** | The `verify` skill, `e2e-runner`, the multi-agent `council`, Playwright screenshots. |
+| 4 | **Isolated VM** | **Bundled.** OrbStack Ubuntu 24.04 VM, every tool inside, `bin/devbox reset` rebuilds in ~5 min, host untouched. |
 
 ## File layout
 
 ```
 .
-├── CLAUDE.md                  # instructions for Claude Code in this project
-├── CLAUDE.zh-CN.md            # 同上，中文版
-├── README.md                  # this file (English)
-├── README.zh-CN.md            # 中文版
-├── FAQ.md                     # frequently asked questions
-├── CONTRIBUTING.md            # how to file issues / send PRs (EN + 中文)
-├── CHANGELOG.md               # release notes (Keep a Changelog)
-├── SECURITY.md                # vulnerability disclosure policy
-├── LICENSE                    # MIT
-├── Makefile                   # make setup / doctor / reset / passthrough / shell
-├── .editorconfig              # indentation / EOL / final newline
-├── .markdownlint.jsonc        # markdown lint rules
-├── .gitignore
-├── assets/
-│   ├── logo.svg               # monogram used in social cards
-│   ├── banner.svg             # banner used in this README
-│   └── social-card.svg        # Open Graph / social share card
-├── .claude/
-│   └── settings.json          # project-level sandbox config (allow list, yolo backstop deny)
-├── .mcp.json                  # open-design MCP bridge config (consumed by CC inside the VM)
-├── .github/
-│   ├── workflows/
-│   │   ├── ci.yml             # shellcheck + markdownlint + JSON/YAML validation + smoke
-│   │   └── test-mirrors.yml   # both CN_MIRROR branches must parse + reach real hosts
-│   ├── ISSUE_TEMPLATE/
-│   │   ├── bug_report.yml
-│   │   └── feature_request.yml
-│   └── PULL_REQUEST_TEMPLATE.md
-├── docs/
-│   ├── design.md              # why this project exists
-│   ├── architecture.md        # component diagram + data flow + env passthrough
-│   ├── comparison.md          # vs Docker Desktop / Lima / Vagrant / Multipass
-│   ├── security-model.md      # yolo-safety model: walls, threats, limitations
-│   ├── workflow.md            # the harness loop: 5 stages + isolation rules
-│   └── *.zh-CN.md             # 中文版（architecture / comparison / security-model / workflow）
-├── examples/                  # minimal end-to-end demos
-│   └── harness-demo/          # runnable harness loop: spec + orchestrate.py + reviewers
+├── README.md / README.zh-CN.md   # this file (EN / 中文)
+├── CLAUDE.md / CLAUDE.zh-CN.md    # Claude Code instructions (EN / 中文)
+├── AGENTS.md                      # portable entry point for any AI agent
+├── FAQ.md                         # questions + troubleshooting
+├── CONTRIBUTING.md · CHANGELOG.md · SECURITY.md · LICENSE
+├── Makefile                       # make setup / doctor / reset / shell
+├── assets/                        # logo / banner / social-card SVGs
+├── .claude/settings.json          # sandbox allow list + yolo backstop deny
+├── .mcp.json                      # open-design + atelier MCP bridge config
 ├── bin/
-│   └── devbox                 # host wrapper: run / shell / claude / gui / reset / doctor
-└── setup/
-    ├── install-orbstack.sh    # brew or direct .dmg install of OrbStack
-    ├── provision.sh           # one-shot VM bootstrap (apt, node 24, python, go, rust, open-design)
-    ├── host-passthrough.sh    # forward host env (ANTHROPIC_*, GITHUB_TOKEN) into the VM
-    └── uninstall.sh           # tear it all down (--all removes OrbStack itself)
+│   ├── devbox                     # host wrapper: run / shell / claude / gui / reset / doctor
+│   └── mcp-atelier.py             # stdio MCP server wrapping bin/devbox --json
+├── docs/
+│   ├── design.md                  # why this project exists (four pillars)
+│   ├── architecture.md            # components, data flow, host/VM split
+│   ├── comparison.md              # vs Docker Desktop / Lima / Vagrant / Multipass
+│   ├── security-model.md          # yolo-safety model: walls, threats, limits
+│   └── workflow.md                # the harness loop: 5 stages + isolation
+├── examples/harness-demo/         # runnable harness loop: spec + orchestrate.py
+└── setup/                         # install-orbstack / provision / host-passthrough / uninstall
 ```
-
-## Daily workflow
-
-```bash
-# start of session
-bin/devbox claude              # Claude Code, inside the VM, yolo
-# in another terminal tab:
-bin/devbox gui                 # open-design web UI tunneled to host browser
-# in the host browser:
-open http://localhost:7456
-```
-
-When you're done, Ctrl-C both terminals. Nothing leaks back to the host.
-
-## Should I run Claude Code on the host?
-
-**Default: no. Use `bin/devbox claude`.**
-
-Atelier's whole promise is that the host Mac stays inert. That
-promise only holds when Claude Code itself runs in the VM. If you
-launch CC on the host instead, the following happens on the host:
-
-- CC writes to `~/.claude/{cache,file-history,session-data,
-  paste-cache, telemetry, ...}`
-- Any MCP server CC loads (open-design, lazyweb, context7, ...)
-  runs as a host process
-- Any CC-installed skill or plugin writes to `~/.claude/...`
-- The `.claude/settings.json` deny list *still* works (it's read
-  by the host's CC), but its scope is reduced — it can no longer
-  protect you from a misbehaving MCP server
-
-**When is host CC OK?**
-
-- You're not running with `--dangerously-skip-permissions`
-- You're doing read-only work (no writes, no MCP, no shell)
-- You're asking a quick question, not driving a multi-step task
-- You understand you've opted out of the "host stays inert" promise
-
-**When is host CC a bad idea?**
-
-- yolo mode: always `bin/devbox claude`
-- Multi-step coding with tool use: `bin/devbox claude`
-- Anything that touches the network: `bin/devbox claude` (the MCP
-  servers that handle network calls only exist in the VM)
-- Anything that needs `pnpm test` etc. (host has no pnpm anyway)
-
-If you really must run on the host, the project's
-`.claude/settings.json` still applies — atelier is not bypassed,
-just *weakened* (the wall is still there, but a misbehaving
-plugin / MCP can leave a footprint on the host).
 
 ## The yolo-safety model
 
-The point of this project is **yolo with a bounded blast radius.** The
-architecture itself is the wall — the deny list is just the last-resort
-backstop for `--dangerously-skip-permissions`.
+The point is **yolo with a bounded blast radius**: the architecture is
+the wall, the deny list is the backstop.
 
-**Architecture (the real wall).** The host is supposed to be inert. Every
-mutating op that needs CPU/memory/disk routes through `bin/devbox run`
-into the VM. The host runs nothing except Claude Code's display terminal
-and the open-design web UI in your browser. The `.claude/settings.json`
-in this project has a tiny allow list (sandbox driver + observation
-tools) — anything else, the user has to grant explicitly.
+- **The wall** — the host is inert. Every mutating op routes through
+  `bin/devbox run` into the VM. `.claude/settings.json` allow-lists only
+  the sandbox driver + observation tools; anything else needs explicit
+  grant.
+- **The backstop** — under `--dangerously-skip-permissions` only the
+  deny list bites, and it covers only the unrecoverable: `rm -rf /`,
+  `sudo`, `curl|bash`, credential stores (`~/.ssh`, `~/.aws`, …).
 
-**Last-resort deny list (yolo backstop).** When you run CC with
-`--dangerously-skip-permissions`, only the deny list still bites. It
-contains only the things whose consequences don't recover even if
-caught in seconds: `rm -rf /`, `sudo`, `curl|bash`, credential stores
-(`~/.ssh/**`, `~/.aws/**`, etc.). Shell rc files and host config dirs
-are deliberately **not** in the deny list — the architecture says CC
-writes only to the project tree. If the architecture breaks, the user
-adds a path to the allow list; the deny list is for the "unrecoverable
-mistake" class, not for "things we don't want right now."
+Full threat model, the three layers, and what it deliberately does
+*not* defend against: [`docs/security-model.md`](docs/security-model.md).
 
-See `CLAUDE.md` for the full model.
-
-## Why OrbStack and not "just Docker"?
+## Why OrbStack, not "just Docker"?
 
 OrbStack gives a *real* Linux VM (full init, kernel isolation, disk
-image) plus a Docker daemon that runs natively on macOS via Apple's
-Virtualization framework. Compared to Docker Desktop, it is faster on
-Apple Silicon, lighter on resources, and lets you keep state in
-disposable VMs (`bin/devbox reset` rebuilds in seconds). The trade-off
-is that a Linux VM is heavier than a plain container — but for a real
-dev environment with shared folders, dev servers, easy reset, and SSH
-access, that trade is worth it.
+image) plus a native macOS Docker daemon, faster and lighter than Docker
+Desktop on Apple Silicon, with disposable VMs that `bin/devbox reset`
+rebuilds in seconds. The head-to-head vs Docker Desktop / Lima / colima /
+Vagrant / Multipass / Apple's `container` is in
+[`docs/comparison.md`](docs/comparison.md).
 
 ## Troubleshooting
 
-| Symptom                                            | Fix                                                                                              |
-|----------------------------------------------------|--------------------------------------------------------------------------------------------------|
-| `orb: command not found`                           | `export PATH="/opt/homebrew/bin:$PATH"` or `ln -sf $(pwd)/bin/devbox /usr/local/bin/devbox`      |
-| `atelier` not running                              | `bin/devbox provision` (creates + starts + installs)                                             |
-| `claude` in VM not authenticated                   | `./setup/host-passthrough.sh` then start a new `bin/devbox claude`                                |
-| `od` daemon not running                            | `bin/devbox gui` (auto-starts the daemon) or `bin/devbox claude`                                |
-| Browser shows connection refused on localhost:7456 | `bin/devbox gui` is not running. Run it.                                                          |
-| Want a clean slate                                 | `bin/devbox reset` (DESTRUCTIVE — wipes the VM and recreates from zero)                          |
-| Port 8000 already taken on the host                | VM has its own network namespace; use any port inside the VM                                     |
-| Suspicious of a state in the VM                    | `bin/devbox run bash -c "rm -rf ~/*"` — it's a VM, the blast radius is bounded                   |
-
-## Resetting the sandbox
-
-```bash
-bin/devbox reset
-```
-
-Prompts for confirmation, deletes the existing `atelier` VM, and
-recreates it from scratch with the same provision script. Re-run time:
-~5–10 minutes (mostly downloading Ubuntu packages and language
-runtimes). The host filesystem is untouched.
+Common symptoms and fixes live in [FAQ.md](FAQ.md#troubleshooting)
+(e.g. `orb: command not found`, VM not running, `connection refused` on
+`localhost:7456`, token not seen in the VM). The quickest recovery from a
+suspect VM is always `bin/devbox reset` — it's a VM, the blast radius is
+bounded, and the host filesystem is untouched.
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for how to file issues and send
-PRs. The design rationale behind the four pillars lives in
-[`docs/design.md`](docs/design.md); deeper system details are in
-[`docs/architecture.md`](docs/architecture.md), the yolo-safety model
-in [`docs/security-model.md`](docs/security-model.md), and the
-Docker Desktop / Lima / Vagrant / Multipass comparison in
-[`docs/comparison.md`](docs/comparison.md). For common questions, see
-[FAQ.md](FAQ.md). Security issues: see
-[SECURITY.md](SECURITY.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md). Deeper rationale lives in
+[`docs/design.md`](docs/design.md); common questions in [FAQ.md](FAQ.md);
+security disclosure in [SECURITY.md](SECURITY.md).
 
 ## License
 
 [MIT](LICENSE)
+</content>

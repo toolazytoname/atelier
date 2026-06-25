@@ -9,52 +9,27 @@ Claude Code itself.
 
 ## The yolo-safety model
 
-The whole point of this project is **yolo with a bounded blast radius.**
-The architecture itself is the wall — the deny list is just the last-resort
-backstop for `--dangerously-skip-permissions`.
+**Yolo with a bounded blast radius.** The architecture is the wall; the
+deny list is just the backstop for `--dangerously-skip-permissions`.
 
-**Architecture (the real wall).** The host is supposed to be inert. Every
-mutating op routes through `bin/devbox run` into the VM. The host runs
-nothing except Claude Code itself. There is no legitimate reason for the
-host to be modified by this project — so the allow list is tiny:
+- **The wall** — the host is inert. Every mutating op routes through
+  `bin/devbox run` into the VM. `.claude/settings.json` allow-lists only
+  the sandbox driver (`bin/devbox*`, `setup/*`, `make*`, `git*`, `orb*`)
+  and observation/CC tools (`Read`, `Glob`, `Grep`, `Agent`, …).
+  Anything else, the user grants explicitly — the host does not grow
+  tools or config over time.
+- **The backstop** — under yolo, only the deny list bites, and only on
+  the unrecoverable: `rm -rf /`/`~`, fork bombs, `sudo`/`doas`,
+  `curl|bash`/`eval`/`exec`, and writes to credential stores
+  (`~/.ssh`, `~/.aws`, `~/.gnupg`, `~/.kube`, `~/.docker`). Shell rc
+  files and host config dirs are deliberately *not* denied — if a
+  feature genuinely needs them, the user adds to the allow list rather
+  than relaxing the deny list.
+- **The wall only covers this project.** A project `settings.json` only
+  applies inside this directory; `cd` elsewhere runs CC under the host's
+  global settings. Stay in the project to keep the wall up.
 
-- `bin/devbox*`, `setup/*`, `make*`, `git*`, `orb*`, `orbctl*` — the
-  sandbox driver surface
-- `Read`, `Glob`, `Grep`, `WebFetch`, `WebSearch` — observation
-- `TodoWrite`, `Task`, `Agent`, etc. — Claude Code features
-
-Everything else either goes through the VM (heavy work) or doesn't need
-to happen at all. If something outside this allow list is needed once, the
-user grants it; nothing here implies the host should grow tools, configs,
-or packages over time.
-
-**Last-resort deny list (yolo backstop).** With
-`--dangerously-skip-permissions`, only the deny list still bites. It is
-intentionally short — only the things whose consequences don't recover
-even if caught in seconds:
-
-- `rm -rf /`, `rm -rf ~`, `rm -rf $HOME/Code/crack/!(atelier)/**`,
-  `:(){ :|:&};:` — nukes
-- `sudo *`, `doas *` — privilege escalation
-- `curl *|bash`, `curl *|sh`, `wget *|bash`, `wget *|sh`, `eval *`,
-  `exec *` — remote-code-execution vectors
-- `Write/Edit ~/.ssh/**`, `~/.aws/**`, `~/.gnupg/**`, `~/.kube/**`,
-  `~/.docker/**` — credential stores (one overwrite = real damage)
-
-**What is NOT in the deny list, intentionally.** Shell rc files
-(`~/.zshrc`, `~/.bashrc`), host config dirs (`~/.config/**`), system
-paths (`/etc/**`, `/usr/**`, `/System/**`, `/Library/**`,
-`/Applications/**`). The architecture says CC writes only to the
-project tree and routes everything through the VM. If that contract
-breaks (e.g., a future feature genuinely needs to touch a host config),
-the user adds the path to the allow list — they don't relax the
-deny list. The deny list is for the "unrecoverable mistake" class,
-not for "things we don't want right now."
-
-**The wall only covers this project.** A project-level `settings.json`
-only affects work done inside this directory. `cd ~/Code/crack/other-project`
-runs CC under the host's `~/.claude/settings.json` instead. Stay in
-the project to keep the wall up.
+Full threat model and the three layers: [`docs/security-model.md`](docs/security-model.md).
 
 ## Default workflow (yolo harness)
 
@@ -190,28 +165,14 @@ bin/devbox reset                                        # nuke + recreate (DESTR
 
 ## What runs on the host vs. the VM
 
-| Concern                      | Host | VM | Notes                                                |
-|------------------------------|------|----|------------------------------------------------------|
-| Terminal, browser            |  ✓   |    | the OS already does this for you                    |
-| OrbStack hypervisor          |  ✓   |    | runs the Linux VM on Apple Silicon                   |
-| Claude Code                  |      |  ✓ | `bin/devbox claude` — talks to local MCP              |
-| open-design daemon           |      |  ✓ | Node service, binds 127.0.0.1:7456                   |
-| open-design MCP              |      |  ✓ | stdio bridge; configured via `.mcp.json`              |
-| open-design web UI           |      |  ✓ | served by daemon; viewed in host browser via SSH tunnel |
-| `playwright` MCP             |      |  ✓ | browser runs inside VM (faster, isolated)           |
-| `context7`, `exa`, `lazyweb` |      |  ✓ | network only, no host state                          |
-| `github` MCP                 |      |  ✓ | uses VM's `gh` auth                                  |
-| Node 24 / pnpm / uv / go / rust / gh / starship |  | ✓ | see `setup/provision.sh`           |
-| Docker engine                |  ✓   |    | OrbStack daemon is the host; VM CLI talks to socket  |
+Short version: the host runs the terminal, the browser, OrbStack, and
+`git`/file reads; **everything else runs in the VM** (Claude Code,
+open-design daemon + MCP, all language toolchains, all network MCPs).
+The full per-component table is in
+[`docs/architecture.md`](docs/architecture.md).
 
 ## Troubleshooting
 
-- **`orb: command not found`** → `export PATH="/opt/homebrew/bin:$PATH"`
-  or symlink `bin/devbox` into your PATH.
-- **`atelier` not running** → `bin/devbox provision` (creates + starts
-  - provisions) or `orbctl start atelier`.
-- **Port 8000 conflict** (Python already listening on host) — use a
-  different port inside the VM; the VM has its own network namespace so
-  this shouldn't bite unless you forward explicitly.
-- **Token rotated** → re-run `./setup/host-passthrough.sh`.
-- **VM borked** → `bin/devbox reset` (destructive: rebuilds from scratch).
+See [FAQ § Troubleshooting](FAQ.md#troubleshooting) for the symptom →
+fix table. The universal recovery is `bin/devbox reset` (DESTRUCTIVE —
+rebuilds the VM from scratch; the host filesystem is untouched).

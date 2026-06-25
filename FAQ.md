@@ -160,6 +160,24 @@ For a poor man's snapshot, copy the VM image out of OrbStack's
 storage directory before a risky op. Or, more pragmatically, just
 `bin/devbox reset` after — it's fast.
 
+## Troubleshooting
+
+Quick symptom → fix. Several of these are expanded in the Q&A above.
+
+| Symptom | Fix |
+|---|---|
+| `orb: command not found` | `export PATH="/opt/homebrew/bin:$PATH"`, or symlink `bin/devbox` into your PATH (`make install-bin`) |
+| `bin/devbox: command not found` | `export PATH="$(pwd)/bin:$PATH"` from the project root |
+| `VM atelier is not running` | `bin/devbox run …` auto-starts it, or `orbctl start atelier` |
+| VM boots but tools are missing | provision didn't finish — `bin/devbox provision` (idempotent) |
+| `claude` in the VM not authenticated | `./setup/host-passthrough.sh`, then start a fresh `bin/devbox claude` |
+| token not seen in the VM | passthrough not run or token rotated — re-run `./setup/host-passthrough.sh` |
+| `connection refused` on `localhost:7456` | `bin/devbox gui` isn't running — start it (it auto-starts the open-design daemon) |
+| `command not found` for `pnpm`/`pytest`/… | you ran it on the host — route it: `bin/devbox run <cmd>` |
+| provision hangs on a download | CN mirror rate-limit — switch with `CN_MIRROR=0 ./setup/provision.sh` |
+| port already taken on the host | the VM has its own network namespace; host conflicts don't propagate |
+| something looks off in the VM | `bin/devbox reset` — it's a VM, the blast radius is bounded, the host is untouched |
+
 ## Contributing
 
 ### Where do I report a security issue?

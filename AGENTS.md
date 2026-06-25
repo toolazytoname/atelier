@@ -117,6 +117,24 @@ them in any URL. If a log line accidentally contains a token,
 | `bin/devbox reset` | **DESTRUCTIVE** — delete + recreate the VM. Asks for `yes` |
 | `bin/devbox help` | show the same help text |
 
+Add `--json` to any subcommand (`bin/devbox --json run …`) for a
+stable parseable envelope: `ok / exit_code / duration_ms / stdout /
+stderr`.
+
+**Prefer the MCP server over shelling out.** atelier ships
+`bin/mcp-atelier.py`, a stdio MCP server (Python stdlib, zero deps,
+already wired in `.mcp.json`) that wraps `bin/devbox --json` as tools.
+If your runtime speaks MCP, call these instead of `Bash`:
+
+| MCP tool | Replaces |
+|---|---|
+| `mcp__atelier__run({"cmd": "pnpm test"})` | `bin/devbox run pnpm test` |
+| `mcp__atelier__run_claude({"prompt": "…"})` | `bin/devbox run claude -p "…"` |
+| `mcp__atelier__status({})` / `doctor({})` / `version({})` | `bin/devbox <subcmd>` |
+
+Each call returns `{content: [{type: "text", text: "<json>"}], isError}`;
+parse `text` as the same envelope `--json` emits.
+
 **Default invocation pattern:**
 
 ```bash
