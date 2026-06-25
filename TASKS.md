@@ -41,3 +41,9 @@ These are the load-bearing choices that aren't obvious from the code:
   package. CI uses Node only for markdownlint.
 - **No automatic HANDOFF.md** — recovery across `/clear` is the model's
   job (`TASKS.md` + `CLAUDE.md` + git), not a script's.
+- **The harness builds the next-iteration prompt inline** — see
+  `GENERATOR_PROMPT` in `examples/harness-demo/orchestrate.py`. A separate
+  templated renderer (`bin/devbox-handoff.py` + `handoff-template.md`) was
+  removed as YAGNI: it was never wired into the demo, and the inline
+  approach is self-contained and enough for an example. Production loops
+  use the `everything-claude-code` skills, not repo scaffolding.
