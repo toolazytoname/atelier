@@ -30,7 +30,7 @@
       "Bash(rm -rf ~/*)",
       "Bash(rm -rf $HOME)",
       "Bash(rm -rf $HOME/**)",
-      "Bash(rm -rf /Users/lazy/Code/crack/!(atelier)/**)",
+      "Bash(rm -rf $HOME/Code/crack/!(atelier)/**)",
       "Bash(sudo*)",
       "Bash(doas*)",
       "Bash(curl *|bash*)",
@@ -52,5 +52,6 @@
     ]
   },
   "_philosophy": "Architecture is the wall, not the deny list. The host is supposed to be inert — every mutating op routes through bin/devbox into the VM. The allow list is the architectural surface; the deny list is the last-resort backstop for yolo mode. With --dangerously-skip-permissions, only the deny list still bites.",
+  "_deny_note": "The sibling-projects guard (rm -rf $HOME/Code/crack/!(atelier)/**) assumes atelier is checked out at $HOME/Code/crack/atelier. If your layout differs, adjust this path to point at the parent of your projects so the guard actually protects them.",
   "_write_scope": "Write/Edit tools are NOT in the allow list, which means by default they prompt for any path. The project tree (./**) is auto-approved because the tool's defaults assume the project dir. To write elsewhere, the user must explicitly grant a path pattern."
 }

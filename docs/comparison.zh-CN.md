@@ -24,7 +24,7 @@
 1. **真正的 Linux VM**（不是假装成 VM 的容器）—— 我们需要 apt、systemd、
    真正的 `/dev`、完整的 POSIX 文件系统
 2. **Apple Silicon 性能** —— 4 vCPU / 8 GB 启动 <10s 且不降频
-3. **自动共享宿主文件系统** —— 宿主上的 `/Users/lazy/...` 自动映射到 VM 的
+3. **自动共享宿主文件系统** —— 宿主上的 `/Users/you/...` 自动映射到 VM 的
    `/mnt/mac/...`，不用手动 `sshfs`
 4. **一个 CLI 驱动它** —— `orbctl run` / `orbctl shell` / `orbctl create` /
    `orbctl delete`。我们包成 `bin/devbox`
@@ -46,7 +46,7 @@ atelier 一样都用不上）。
 **优点：**
 
 - 4-vCPU Ubuntu VM ~4s 启动，闲置 ~250 MB RAM
-- `/Users/lazy` 自动共享为 `/mnt/mac` —— 不用 `sshfs`、不用 `vagrant rsync`
+- `/Users/you` 自动共享为 `/mnt/mac` —— 不用 `sshfs`、不用 `vagrant rsync`
 - `orbctl run` / `orbctl shell` 底层就是 `ssh` —— 没有 daemon、没有 Docker socket 依赖
 - 在 UI 里就能改磁盘 / CPU / RAM，不用重建 VM
 - Pro 版：快照（我们没包 wrapper；想用的用户直接用 OrbStack UI）
@@ -210,7 +210,7 @@ Intel 不支持。
 - atelier 需要 SSH 进 VM（`ssh -L 7456:127.0.0.1:7456 ...` 把
   open-design web UI 隧道出来）。apple/container 没 SSH 故事，daemon
   得换方式暴露。
-- "自动共享 `/Users/lazy/...` → `/mnt/mac/...`" 是 atelier 的核心
+- "自动共享 `/Users/you/...` → `/mnt/mac/...`" 是 atelier 的核心
   UX。apple/container 要求每 container 显式 mount 配置。
 
 **什么时候 apple/container 是对的？** 如果 atelier 是个 *container 化微服务

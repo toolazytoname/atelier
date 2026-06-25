@@ -33,7 +33,7 @@ or packages over time.
 intentionally short — only the things whose consequences don't recover
 even if caught in seconds:
 
-- `rm -rf /`, `rm -rf ~`, `rm -rf /Users/lazy/Code/crack/!(atelier)/**`,
+- `rm -rf /`, `rm -rf ~`, `rm -rf $HOME/Code/crack/!(atelier)/**`,
   `:(){ :|:&};:` — nukes
 - `sudo *`, `doas *` — privilege escalation
 - `curl *|bash`, `curl *|sh`, `wget *|bash`, `wget *|sh`, `eval *`,
@@ -134,8 +134,8 @@ terminal, a browser, and OrbStack.
     uv / gh / starship
   - Network MCPs: `playwright`, `context7`, `exa`, `github`,
     `lazyweb`, `sequential-thinking`
-- **Project files** (`/Users/lazy/Code/crack/atelier/`) live on the host,
-  mounted at `/mnt/mac/Users/lazy/Code/crack/atelier/` inside the VM via
+- **Project files** (`/Users/you/Code/crack/atelier/`) live on the host,
+  mounted at `/mnt/mac/Users/you/Code/crack/atelier/` inside the VM via
   OrbStack's auto-share. Edit either side; execution stays in the VM.
 
 ## Daily loop

@@ -29,9 +29,9 @@ script: `bin/devbox` (in the project root).
 │                     │  share  │ • Playwright browser     │
 └─────────────────────┘         └──────────────────────────┘
 
-Project files:  host    /Users/lazy/Code/crack/<project>
+Project files:  host    /Users/you/Code/crack/<project>
                 ↕  OrbStack auto-share
-                VM      /mnt/mac/Users/lazy/Code/crack/<project>
+                VM      /mnt/mac/Users/you/Code/crack/<project>
 ```
 
 ## 2. The contract you must respect
@@ -60,8 +60,8 @@ command is meaningless on the host. Route it.
 
 ### Rule 2: project files live on the host, accessible from the VM
 
-The host's `/Users/lazy/Code/crack/<project>/` is auto-shared
-into the VM as `/mnt/mac/Users/lazy/Code/crack/<project>/`.
+The host's `/Users/you/Code/crack/<project>/` is auto-shared
+into the VM as `/mnt/mac/Users/you/Code/crack/<project>/`.
 You can edit either side. **Identical bytes. Identical git
 state.** Edits from the VM appear on the host instantly (and
 vice versa).
@@ -129,7 +129,7 @@ bin/devbox run go test ./...
 
 # "Open the VM shell and let me poke around" → bin/devbox shell
 bin/devbox shell
-$ pwd    # /mnt/mac/Users/lazy/Code/crack/<project>
+$ pwd    # /mnt/mac/Users/you/Code/crack/<project>
 $ ls     # project files
 $ exit   # back to host
 
@@ -213,7 +213,7 @@ Ask only when:
 | `permission denied: ~/.ssh` | deny list hit | correct behaviour — don't bypass |
 | token not seen in VM | passthrough not run / token rotated | `./setup/host-passthrough.sh` |
 | VM boots but tools missing | provision didn't finish | `bin/devbox provision` |
-| `bin/devbox: command not found` | host PATH | `export PATH="/Users/lazy/Code/crack/claude/atelier/bin:$PATH"` or `make install-bin` |
+| `bin/devbox: command not found` | host PATH | `export PATH="/Users/you/Code/crack/claude/atelier/bin:$PATH"` or `make install-bin` |
 
 ## 7. Where to learn more
 

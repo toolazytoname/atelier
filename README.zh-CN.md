@@ -153,7 +153,7 @@ VM（atelier）—— 其它所有东西
 └── 网络型 MCP（lazyweb, context7, exa, playwright, github, sequential-thinking）
 ```
 
-项目目录在宿主上（`/Users/lazy/Code/crack/atelier/`），通过 OrbStack
+项目目录在宿主上（`/Users/you/Code/crack/atelier/`），通过 OrbStack
 的 auto-share 挂到 VM 内的 `/mnt/mac/...`。两边都能编辑，但执行路径
 始终在 VM 内。
 
@@ -168,7 +168,7 @@ VM（atelier）—— 其它所有东西
 | open-design MCP               |      |  ✓ | CC ↔ 守护进程的 stdio 桥 |
 | open-design web UI            |      |  ✓ | VM 内起在 127.0.0.1:7456；宿主访问 localhost:7456 |
 | Node 24 / pnpm / Python / Go / Rust / uv / gh / starship |  | ✓ | 按项目隔离；`bin/devbox reset` 一次性清理 |
-| 项目文件                      |  ✓   |    | 宿主上 `/Users/lazy/Code/crack/atelier/`，VM 内挂 `/mnt/mac/...` |
+| 项目文件                      |  ✓   |    | 宿主上 `/Users/you/Code/crack/atelier/`，VM 内挂 `/mnt/mac/...` |
 
 ## 四大支柱方法论
 

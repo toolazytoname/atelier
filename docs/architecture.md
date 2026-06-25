@@ -51,9 +51,9 @@
 ┌──────────────────────────────────────────────────────────────────────┐
 │  Layer 4: Project files                                              │
 │  ───────────────                                                     │
-│  /Users/lazy/Code/crack/<project>  (host)                            │
+│  /Users/you/Code/crack/<project>  (host)                            │
 │  ↕ OrbStack auto-share                                               │
-│  /mnt/mac/Users/lazy/Code/crack/<project>  (VM)                      │
+│  /mnt/mac/Users/you/Code/crack/<project>  (VM)                      │
 │                                                                      │
 │  Edit either side. Identical bytes. Survives bin/devbox reset.        │
 └──────────────────────────────────────────────────────────────────────┘
@@ -170,7 +170,7 @@ safe in the yolo harness loop.
 It contains only the commands whose consequences don't recover even
 if caught in seconds:
 
-- `rm -rf /`, `rm -rf ~`, `rm -rf /Users/lazy/Code/crack/!(atelier)/**`
+- `rm -rf /`, `rm -rf ~`, `rm -rf $HOME/Code/crack/!(atelier)/**`
 - `sudo *`, `doas *`
 - `curl *|bash`, `wget *|bash`, `eval *`, `exec *`
 - `Write` / `Edit` to `~/.ssh/**`, `~/.aws/**`, `~/.gnupg/**`,
@@ -187,7 +187,7 @@ list. The deny list is for the "unrecoverable mistake" class, not
 
 | What | Where | Survives `bin/devbox reset`? |
 |------|-------|------------------------------|
-| Project source code | `/Users/lazy/Code/crack/<project>` (host) ↔ `/mnt/mac/...` (VM) | ✅ |
+| Project source code | `/Users/you/Code/crack/<project>` (host) ↔ `/mnt/mac/...` (VM) | ✅ |
 | Project `.env`, `.git/`, `node_modules/`, `.venv/`, `target/` | same as above | ✅ |
 | Anthropic token | `/etc/environment.d/host-proxy.conf` (VM), set by `setup/host-passthrough.sh` | ❌ (re-run passthrough) |
 | Claude Code session history | `~/.claude/session-data/` (VM) | ❌ |

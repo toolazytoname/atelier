@@ -186,7 +186,7 @@ VM (atelier) — everything else
 └── network MCPs (lazyweb, context7, exa, playwright, github, sequential-thinking)
 ```
 
-The whole thing shares the host's `/Users/lazy/Code/crack/atelier/`
+The whole thing shares the host's `/Users/you/Code/crack/atelier/`
 through OrbStack's mount at `/mnt/mac/...` — your files live where
 you'd expect (on the host), and the VM just borrows them for execution.
 
@@ -201,7 +201,7 @@ you'd expect (on the host), and the VM just borrows them for execution.
 | open-design MCP¹              |      |  ✓ | stdio bridge from CC to the daemon                                              |
 | open-design web UI¹           |      |  ✓ | served at 127.0.0.1:7456 inside VM; user sees it at localhost:7456 on host      |
 | Node 24 / pnpm / Python / Go / Rust / uv / gh / starship |  | ✓ | isolated per-project; `bin/devbox reset` removes them in one shot    |
-| project files                 |  ✓   |    | `/Users/lazy/Code/crack/atelier/` on host, mounted as `/mnt/mac/...` in VM       |
+| project files                 |  ✓   |    | `/Users/you/Code/crack/atelier/` on host, mounted as `/mnt/mac/...` in VM       |
 
 ¹ *open-design is a separate project. Atelier ships a bridge config
 (`.mcp.json`) and will start the daemon for you, but open-design

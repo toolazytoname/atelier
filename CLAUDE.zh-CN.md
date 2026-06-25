@@ -21,8 +21,8 @@ Claude Code 本身。
     uv / gh / starship
   - 网络型 MCP：`playwright`、`context7`、`exa`、`github`、
     `lazyweb`、`sequential-thinking`
-- **项目文件**（`/Users/lazy/Code/crack/atelier/`）在宿主上，通过 OrbStack
-  自动挂载到 VM 的 `/mnt/mac/Users/lazy/Code/crack/atelier/`。两边都能编辑，
+- **项目文件**（`/Users/you/Code/crack/atelier/`）在宿主上，通过 OrbStack
+  自动挂载到 VM 的 `/mnt/mac/Users/you/Code/crack/atelier/`。两边都能编辑，
   执行始终在 VM 里。
 
 ## Yolo-安全模型
@@ -44,7 +44,7 @@ Claude Code 本身。
 **最后兜底 deny 名单（yolo 兜底）。** 跑 `--dangerously-skip-permissions` 时
 只有 deny 名单仍然生效。**故意做得很短**——只列"哪怕秒级发现都救不回来"的事故：
 
-- `rm -rf /`、`rm -rf ~`、`rm -rf /Users/lazy/Code/crack/!(atelier)/**`、
+- `rm -rf /`、`rm -rf ~`、`rm -rf $HOME/Code/crack/!(atelier)/**`、
   `:(){ :|:&};:`——核弹级
 - `sudo *`、`doas *`——提权
 - `curl *|bash`、`curl *|sh`、`wget *|bash`、`wget *|sh`、`eval *`、

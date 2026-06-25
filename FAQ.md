@@ -88,8 +88,8 @@ In **two places at once, kept in sync by OrbStack:**
 
 | Side | Path |
 |------|------|
-| Host (Mac) | `/Users/lazy/Code/crack/<project>/` |
-| VM (Linux) | `/mnt/mac/Users/lazy/Code/crack/<project>/` |
+| Host (Mac) | `/Users/you/Code/crack/<project>/` |
+| VM (Linux) | `/mnt/mac/Users/you/Code/crack/<project>/` |
 
 Edit either side — they share the same bytes. **Project files survive
 `bin/devbox reset`**. Anything written to VM-only paths (`~/.cargo`,

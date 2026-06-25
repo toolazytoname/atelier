@@ -26,7 +26,7 @@ Before we compare, here's the spec atelier depends on:
    we need apt, systemd, real `/dev`, full POSIX filesystem
 2. **Apple Silicon performance** — 4 vCPU / 8 GB should boot in
    <10 s and not thermal-throttle
-3. **Auto-shared host filesystem** — `/Users/lazy/...` on host
+3. **Auto-shared host filesystem** — `/Users/you/...` on host
    maps to `/mnt/mac/...` in VM, no manual `sshfs` setup
 4. **One CLI to drive it** — `orbctl run` / `orbctl shell` /
    `orbctl create` / `orbctl delete`. We wrap this in
@@ -50,7 +50,7 @@ resources — none of which atelier needs).
 **Strengths:**
 
 - 4-vCPU Ubuntu VM boots in ~4 s, uses ~250 MB RAM idle
-- `/Users/lazy` is auto-shared as `/mnt/mac` — no `sshfs`, no
+- `/Users/you` is auto-shared as `/mnt/mac` — no `sshfs`, no
   `vagrant rsync`
 - `orbctl run` / `orbctl shell` is just `ssh` under the hood —
   no daemon, no Docker socket requirement
@@ -254,7 +254,7 @@ networking, Apple Silicon only. No Intel.
 - atelier needs SSH into the VM (`ssh -L 7456:127.0.0.1:7456 ...`
   to tunnel the open-design web UI). apple/container has no SSH
   story; you'd expose the daemon another way.
-- The "auto-share `/Users/lazy/...` → `/mnt/mac/...`" UX is
+- The "auto-share `/Users/you/...` → `/mnt/mac/...`" UX is
   a core atelier feature. apple/container requires explicit
   per-container mount configuration.
 

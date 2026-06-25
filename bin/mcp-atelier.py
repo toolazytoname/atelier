@@ -7,7 +7,7 @@ consuming atelier never has to shell out:
     mcp__atelier__run({"cmd": "pnpm test"})
     mcp__atelier__status({})
     mcp__atelier__doctor({})
-    mcp__atelier__run_claude({"prompt": "...", "iter": 1, "feedback": "..."})
+    mcp__atelier__run_claude({"prompt": "...", "model": "...", "timeout": 3600})
     mcp__atelier__version({})
 
 Each tool internally invokes `bin/devbox --json <subcmd>` and

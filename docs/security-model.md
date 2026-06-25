@@ -145,7 +145,7 @@ host-side side effect.
       "Bash(rm -rf ~/*)",
       "Bash(rm -rf $HOME)",
       "Bash(rm -rf $HOME/**)",
-      "Bash(rm -rf /Users/lazy/Code/crack/!(atelier)/**)",
+      "Bash(rm -rf $HOME/Code/crack/!(atelier)/**)",
       "Bash(sudo*)",
       "Bash(doas*)",
       "Bash(curl *|bash*)",
@@ -270,7 +270,7 @@ With atelier's configuration:
 
 | Action | yolo OK? | Why |
 |--------|----------|-----|
-| `Read` any file in `/Users/lazy/Code/crack/atelier/` | ✅ | observation |
+| `Read` any file in `/Users/you/Code/crack/atelier/` | ✅ | observation |
 | `Edit` any file in the project tree | ✅ | it's the project |
 | `Bash(make setup)`, `Bash(make doctor)` | ✅ | sandbox driver |
 | `Bash(bin/devbox run pnpm test)` | ✅ | runs in VM |
