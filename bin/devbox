@@ -147,12 +147,15 @@ cmd_pull() {
 
 cmd_provision() {
   ensure_vm
-  local script="/mnt/mac/${DEVBOX_ROOT}/setup/provision.sh"
-  [[ -f "$script" ]] || die "provision script not found at $script"
+  # Existence is checked against the HOST path (this script runs on the host);
+  # the VM path under /mnt/mac is what we hand to orbctl to execute inside the VM.
+  local host_script="$DEVBOX_ROOT/setup/provision.sh"
+  local vm_script="/mnt/mac/${DEVBOX_ROOT}/setup/provision.sh"
+  [[ -f "$host_script" ]] || die "provision script not found at $host_script"
   log "running provision.sh inside $VM_NAME"
   # Pass the host project root through as $1 so provision.sh doesn't have to
   # hardcode any path of its own (it just needs the host view of the repo).
-  orbctl run -m "$VM_NAME" bash "$script" "$DEVBOX_ROOT"
+  orbctl run -m "$VM_NAME" bash "$vm_script" "$DEVBOX_ROOT"
 }
 
 # Run Claude Code entirely inside the VM. The host becomes a thin display
@@ -160,7 +163,11 @@ cmd_provision() {
 # and are shared with the host via /mnt/mac.
 cmd_claude() {
   ensure_vm
-  local extra=()
+  # Seed the env passthrough with DEVBOX_ROOT so the single-quoted VM script
+  # below can expand "${DEVBOX_ROOT}" inside the VM (it is a host-side, non-
+  # exported shell var otherwise invisible to the VM). Without this the cd
+  # target collapses to /mnt/mac/ — the mount root, not the project root.
+  local extra=("DEVBOX_ROOT=$DEVBOX_ROOT")
   for v in ANTHROPIC_BASE_URL ANTHROPIC_AUTH_TOKEN ANTHROPIC_API_KEY \
            API_TIMEOUT_MS GITHUB_TOKEN; do
     [[ -n "${!v-}" ]] && extra+=("$v=${!v}")

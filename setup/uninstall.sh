@@ -3,8 +3,8 @@
 #
 # What it removes:
 #   1. The atelier OrbStack VM (and any other VMs whose name starts with
-#      "dev-" — opt out by editing DEVBOX_PREFIX).
-#   2. The /home/lazy/.config/environment.d/host-proxy.conf passthrough file
+#      the same prefix — opt out by editing DEVBOX_PREFIX).
+#   2. The ~/.config/environment.d/host-proxy.conf passthrough file
 #      inside each VM (best-effort).
 #   3. With --all: OrbStack itself (/Applications/OrbStack.app and ~/Library/...).
 #   4. With --all: the bin/devbox symlink in /usr/local/bin if you created one.
@@ -16,7 +16,9 @@
 set -euo pipefail
 
 VM_NAME="${DEVBOX_VM:-atelier}"
-DEVBOX_PREFIX="dev-"
+# Extra VMs sharing this prefix get cleaned up too. Defaults to the VM name so
+# the common case (just "atelier") works; set DEVBOX_PREFIX to widen the sweep.
+DEVBOX_PREFIX="${DEVBOX_PREFIX:-$VM_NAME}"
 DO_ALL=0
 [[ "${1:-}" == "--all" ]] && DO_ALL=1
 

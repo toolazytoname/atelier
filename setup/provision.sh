@@ -11,12 +11,12 @@ export DEBIAN_FRONTEND=noninteractive
 
 CN_MIRROR="${CN_MIRROR:-1}"   # 1 = use China mirrors where it helps, 0 = international
 
-# Host project root, e.g. /Users/lazy/Code/crack/claude/atelier. This is the
+# Host project root, e.g. /Users/you/Code/crack/claude/atelier. This is the
 # path as seen from the HOST filesystem; the VM sees it at /mnt/mac/$HOST_ROOT
 # (OrbStack's host-mount). The host-side `bin/devbox provision` always passes
-# this in via $1; we fall back to the original install path for backwards-compat
-# with anyone invoking the script directly from inside the VM.
-HOST_ROOT="${1:-/Users/lazy/Code/crack/claude/atelier}"
+# this in via $1; the fallback below is only a placeholder for anyone invoking
+# the script directly from inside the VM (the symlink step skips it if absent).
+HOST_ROOT="${1:-/Users/you/Code/crack/claude/atelier}"
 
 # --- mirror selection ------------------------------------------------------
 # Only the things that are actually slow from this host's egress get mirrored:
@@ -387,10 +387,16 @@ ok "shell rc wired"
 # ---------------------------------------------------------------------------
 step "symlink host code into VM"
 mkdir -p "$HOME/Code"
-if [[ ! -e "$HOME/Code/crack" ]] && [[ -e "/mnt/mac/${HOST_ROOT%/*}" ]]; then
-  ln -sfn "/mnt/mac/${HOST_ROOT%/*}" "$HOME/Code/${HOST_ROOT%/*}"
+# Convenience alias: mirror the project's parent dir into ~/Code under just its
+# basename, so `cd ~/Code/<dir>` works in the VM. The real, always-present path
+# is the OrbStack mount at /mnt/mac/$HOST_ROOT — this is only a shorter handle.
+PARENT_DIR="${HOST_ROOT%/*}"        # e.g. /Users/you/Code/crack/claude
+PARENT_BASE="${PARENT_DIR##*/}"     # e.g. claude
+if [[ -n "$PARENT_BASE" ]] && [[ ! -e "$HOME/Code/$PARENT_BASE" ]] \
+   && [[ -e "/mnt/mac/${PARENT_DIR}" ]]; then
+  ln -sfn "/mnt/mac/${PARENT_DIR}" "$HOME/Code/$PARENT_BASE"
 fi
-ok "$HOME/Code/${HOST_ROOT%/*} -> /mnt/mac/${HOST_ROOT%/*}"
+ok "$HOME/Code/$PARENT_BASE -> /mnt/mac/${PARENT_DIR}"
 
 step "DONE"
 printf '\n\033[1;32m✓ atelier ready. Re-login (or: exec zsh) for shell changes to take effect.\033[0m\n'

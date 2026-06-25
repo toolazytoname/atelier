@@ -13,9 +13,10 @@
 set -euo pipefail
 
 VM_NAME="${DEVBOX_VM:-atelier}"
-# NOTE: $HOME on the host is the macOS path (/Users/lazy). The VM is Linux, so
-# its equivalent home is /home/<user>. Hardcode the VM-side path.
-VM_USER="${VM_USER:-lazy}"
+# NOTE: $HOME on the host is the macOS path (/Users/<you>). The VM is Linux, so
+# its equivalent home is /home/<user>. OrbStack provisions the VM with the same
+# username as the host, so default to that; override with VM_USER if it differs.
+VM_USER="${VM_USER:-$(whoami)}"
 DEST="/home/${VM_USER}/.config/environment.d/host-proxy.conf"
 
 FORWARD_VARS=(
