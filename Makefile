@@ -27,14 +27,9 @@ setup: install-orbstack provision passthrough doctor ## full first-time setup
 	@printf "\n\033[1;32m✓ atelier ready.\033[0m try: make shell\n"
 
 provision: ## run the in-VM provision script (idempotent)
-	@if ! command -v orbctl >/dev/null 2>&1; then \
-		echo "error: OrbStack not installed. run: make install-orbstack"; exit 1; \
-	fi
-	@if ! orbctl list 2>/dev/null | awk '{print $$1}' | grep -qx "$(VM)"; then \
-		echo "creating VM $(VM) ($(CPUS) cpu / $(MEMORY) / $(DISK))"; \
-		orbctl create --cpus $(CPUS) --memory $(MEMORY) --disk $(DISK) $(DISTRO) $(VM); \
-	fi
-	@./bin/devbox run env CN_MIRROR=$(CN_MIRROR) bash /mnt/mac/$(CURDIR)/setup/provision.sh $(CURDIR)
+	@DEVBOX_VM=$(VM) DEVBOX_CPUS=$(CPUS) DEVBOX_MEMORY=$(MEMORY) \
+	 DEVBOX_DISK=$(DISK) DEVBOX_DISTRO=$(DISTRO) CN_MIRROR=$(CN_MIRROR) \
+	 ./bin/devbox provision
 
 passthrough: ## mirror host env (ANTHROPIC_*, GITHUB_TOKEN) into the VM
 	@./setup/host-passthrough.sh
