@@ -28,10 +28,31 @@ which only exists on macOS). On Linux, your dev environment already
 and the toolchain becomes overkill. On Windows, use WSL2 with a
 sibling project — atelier has no plans to support it.
 
+### What does `make setup` install?
+
+Everything runs inside the Ubuntu 24.04 VM — the host Mac gets only
+OrbStack. The authoritative list lives at the top of
+[`setup/provision.sh`](setup/provision.sh); the summary:
+
+| Layer | Tool | Version |
+|---|---|---|
+| apt (base) | build tools, git, zsh, fzf, ripgrep, jq, yq, tmux, btop, neovim, … | Ubuntu 24.04 packages |
+| Node.js | node + npm | v24.11.0 |
+| Node.js | pnpm | 10.15.0 |
+| Python | python3 | 3.12 (system) |
+| Python | uv | latest stable |
+| Go | go | 1.23.4 |
+| Rust | rustc / cargo | stable (rustup) |
+| Containers | docker-ce-cli | latest (optional — skipped if repo is blocked) |
+| GitHub | gh | latest release |
+| LLM | claude (`@anthropic-ai/claude-code`) | latest |
+| Shell | starship | latest (optional — cosmetic only) |
+
+Nothing above is installed on your Mac.
+
 ### How long does `make setup` take?
 
-About **5 minutes** the first time on a fast link, mostly downloading
-Ubuntu packages, Node 24, Go, and Rust. On the CN mirror
+About **5 minutes** the first time on a fast link. On the CN mirror
 defaults (TUNA, npmmirror, goproxy.cn, rsproxy.cn, ghfast.top) this
 drops to 2–3 minutes inside mainland China. Re-runs are idempotent
 and finish in seconds.

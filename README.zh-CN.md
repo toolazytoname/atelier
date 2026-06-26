@@ -130,7 +130,8 @@ Host (Mac) — thin client
                 ↓
 VM (atelier) — everything else
 ├── Claude Code (via `bin/devbox claude`)
-├── Node 24 / pnpm / Python 3.12 / Go / Rust / uv / gh / starship
+├── Node 24 / pnpm / Python 3.12 / Go / Rust / uv / gh / Docker CLI / starship
+│   （→ [完整工具链及版本](FAQ.md#what-does-make-setup-install)）
 └── network MCPs (lazyweb, context7, exa, playwright, github, sequential-thinking)
 ```
 

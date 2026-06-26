@@ -9,6 +9,26 @@
 set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
 
+# ---------------------------------------------------------------------------
+# What this script installs (single source of truth — keep README / FAQ in sync)
+#
+#   Layer           Tool              Version / channel
+#   --------------- ----------------- ---------------------------------
+#   apt (base)      build tools, git, Node 24 deps, zsh, fzf, ripgrep,
+#                   jq, yq, tmux, htop, btop, neovim, …
+#   Node.js         node + npm        v24.11.0 (binary tarball)
+#   Node.js         pnpm              10.15.0  (npm global)
+#   Python          python3           3.12 (Ubuntu system package)
+#   Python          uv                latest stable (astral.sh)
+#   Go                                1.23.4 (binary tarball)
+#   Rust            rustc / cargo     stable (via rustup)
+#   Containers      docker-ce-cli     latest from docker.com (optional — skipped if repo is blocked)
+#   GitHub          gh                latest release (fallback: v2.62.0)
+#   Claude Code     claude            @anthropic-ai/claude-code@latest (npm)
+#   Shell           starship          latest (optional — cosmetic only)
+#   Shell           zsh               set as default login shell
+# ---------------------------------------------------------------------------
+
 CN_MIRROR="${CN_MIRROR:-1}"   # 1 = use China mirrors where it helps, 0 = international
 
 # Host project root, e.g. /Users/you/Code/crack/claude/atelier. This is the
