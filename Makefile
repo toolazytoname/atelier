@@ -1,4 +1,4 @@
-.PHONY: help setup install-orbstack provision passthrough doctor shell run reset uninstall clean lint test
+.PHONY: help setup install-orbstack provision passthrough install-skill doctor shell run reset uninstall clean lint test
 
 # Default VM config (overridable on the command line, e.g. `make setup VM=m2`).
 VM        ?= atelier
@@ -23,7 +23,7 @@ help: ## show this help
 install-orbstack: ## install OrbStack via brew (or download .dmg as fallback)
 	@./setup/install-orbstack.sh
 
-setup: install-orbstack provision passthrough doctor ## full first-time setup
+setup: install-orbstack provision passthrough install-skill doctor ## full first-time setup
 	@printf "\n\033[1;32m✓ atelier ready.\033[0m try: make shell\n"
 
 provision: ## run the in-VM provision script (idempotent)
@@ -33,6 +33,18 @@ provision: ## run the in-VM provision script (idempotent)
 
 passthrough: ## mirror host env (ANTHROPIC_*, GITHUB_TOKEN) into the VM
 	@./setup/host-passthrough.sh
+
+install-skill: ## symlink plugin/skills/atelier into ~/.claude/skills/
+	@SKILL_SRC="$$(pwd)/plugin/skills/atelier"; \
+	 SKILL_DST="$${HOME}/.claude/skills/atelier"; \
+	 mkdir -p "$${HOME}/.claude/skills"; \
+	 if [[ -L "$$SKILL_DST" ]]; then rm -f "$$SKILL_DST"; \
+	 elif [[ -e "$$SKILL_DST" ]]; then \
+	   printf "\033[1;33m!\033[0m $$SKILL_DST exists and is not a symlink — leaving it alone\n" >&2; \
+	   exit 1; \
+	 fi; \
+	 ln -s "$$SKILL_SRC" "$$SKILL_DST"; \
+	 printf "   linked $$SKILL_DST -> $$SKILL_SRC\n"
 
 doctor: ## check that OrbStack, the VM, mounts, and env passthrough are all green
 	@./bin/devbox doctor

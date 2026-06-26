@@ -68,23 +68,11 @@ Run `bin/devbox claude` rather than the host's `claude` so the whole
 process — cache, history, MCP servers — stays in the VM and the host
 stays inert. ([Why? When is host-CC OK?](FAQ.md#should-i-run-claude-code-on-the-host-or-in-the-vm))
 
-### Install the Claude Code skill
+### Claude Code skill
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/toolazytoname/atelier/main/install.sh | bash
-```
-
-Or, if you prefer to review the script first:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/toolazytoname/atelier/main/install.sh | cat   # audit
-curl -fsSL https://raw.githubusercontent.com/toolazytoname/atelier/main/install.sh | bash  # install
-```
-
-The script is [open source](install.sh) — pure bash, only touches
-`~/.claude/skills/` and `~/.claude/skill-packages/`, idempotent on re-run.
-
-Once installed, these phrases automatically route commands to the VM:
+`make setup` symlinks `plugin/skills/atelier` into `~/.claude/skills/`,
+so these phrases automatically route commands to the VM — no separate
+install step:
 
 - **"run tests"** / **"跑测试"**
 - **"build"** / **"构建"**
@@ -93,9 +81,8 @@ Once installed, these phrases automatically route commands to the VM:
 - **"run in sandbox"** / **"在沙箱里跑 XXX"**
 - **"lint"** / **"format"**
 
-You don't need to remember `bin/devbox run` — the skill handles the
-routing. Reading files, editing code, and git operations stay on the host
-as usual.
+Re-run `make install-skill` any time (e.g. after pulling new skill
+changes); it overwrites the symlink idempotently.
 
 ### Mirrors
 
@@ -173,7 +160,7 @@ works without them, you just lose that feature.
 ├── assets/                        # logo / banner / social-card SVGs
 ├── .claude/settings.json          # sandbox allow list + yolo backstop deny
 ├── .mcp.json                      # atelier sandbox MCP bridge config
-├── plugin/                        # Claude Code skill (install via install.sh)
+├── plugin/                        # Claude Code skill (auto-symlinked by `make install-skill`)
 │   ├── .claude-plugin/plugin.json
 │   └── skills/atelier/SKILL.md
 ├── bin/
